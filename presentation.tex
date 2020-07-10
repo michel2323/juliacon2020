@@ -1,0 +1,172 @@
+\documentclass[10pt]{beamer}
+\usepackage{etex}
+\usepackage{subfig}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+% AMSLaTeX packages
+\usepackage{amsthm,amsmath,amsfonts}
+\usepackage[algoruled]{algorithm2e}
+
+\usetheme{default}
+\useoutertheme{default}
+% we want to use images
+\usepackage{graphicx,hyperref,grffile}
+
+% table relates packages
+\usepackage{booktabs,multirow}
+
+\usepackage{xcolor}
+\usepackage{adjustbox}
+%\usepackage{subfigure}
+%\usepackage[numbers]{natbib}
+%\usepackage{natbib}
+\usepackage[style=authortitle]{biblatex}
+\addbibresource{paper.bib}
+%\usepackage{todonotes}
+%\presetkeys{todonotes}{inline}{}
+%\usepackage{multimedia}
+%\usepackage{bibentry}
+%\nobibliography*
+%\let\labelindent\relax
+%\usepackage{enumitem}
+%\usepackage{pst-grad} % For gradients
+%\usepackage{pst-plot}
+%\usepackage{pstricks-add}
+\usepackage[off]{pstricks,auto-pst-pdf} % when switched to on, don't forget to include
+                               % the aforementioned pstricks packages.
+
+% Changes the color of bullets and other fonts to match the NormalANLBlue template
+\definecolor{anlpresentationblue}{RGB}{127 160 195}
+\setbeamercolor{structure}{fg=anlpresentationblue!150} % for slide titles, etc
+\setbeamercolor{block title}{fg=white,bg=anlpresentationblue} % For blocks
+\setbeamercolor{block body}{fg=black,bg=anlpresentationblue!20} % For blocks
+
+% Force revisiting of table of contents every time a new section is declared
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       \tableofcontents[currentsection]
+   \end{frame}
+}
+
+\setlength\arraycolsep{1.4pt}% some length
+\definecolor{darkgreen}{HTML}{3C8031}
+%\definecolor{darkgreen}{HTML}{2D2F92}
+%\definecolor{darkgreen}{HTML}{F58137}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+
+%gets rid of navigation symbols
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[circle]
+
+%gets rid of bottom navigation bars
+\setbeamertemplate{footline}[page number]{}
+\setbeamertemplate{headline}{}
+\hypersetup{
+colorlinks = true,
+%linkbordercolor = {white},
+%<your other options\dots>,
+}
+
+%\usepackage{cmbright} % A font that I like
+% \usepackage[T1]{fontenc}
+
+% \renewcommand{\seriesdefault}{sb} % Changes the font to semibold
+
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{NormalANLBlue}}
+
+\title[]{
+Solving Power Flow on GPUs in Julia \\
+}
+\author[]{Michel Schanen*, Daniel Adrian Maldonado}
+\subtitle{}
+\institute[ANL/MCS]{Argonne National Laboratory\\ Mathematics and Computer Science
+Division}
+\date{Jul 15, 2020}
+
+\usepackage{tikz,tikz-cd}
+\usepackage{pgfplots,pgfplotstable}
+\usetikzlibrary{pgfplots.groupplots}
+\usetikzlibrary{positioning}
+\usetikzlibrary[shapes,arrows,trees]
+\usetikzlibrary{matrix,decorations.pathmorphing}
+% \usepackage{epstopdf}
+\usepackage{tensor}
+\usepackage[usecolors=true, usebox=true]{jlcode}
+\addtobeamertemplate{footnote}{}{ \vspace{2ex}}
+
+\newcommand{\Var}[1]{\mathrm{Var}\left \{ #1\right\}} % Variance
+\newcommand{\vol}[1] {\operatorname{vol}\left( #1 \right)}
+\newcommand{\E}[1]{\operatorname{\mathbb{E}}\left[ #1\right]} % Expected value
+\renewcommand{\P}[1]{\operatorname{\mathbb{P}}\left[ #1\right]} % Expected value
+\newcommand{\norm}[1]{\left\| {#1} \right\|}
+\newcommand{\argmax}{\operatornamewithlimits{arg\,max}}
+\newcommand{\argmin}{\operatornamewithlimits{arg\,min}}
+\newcommand{\jeffa}{\phantom{\sum_{i = 1}^{m}\tilde{f}\mathcal{N}(0,\sigma^2)}}
+\newtheorem{proposition}[theorem]{Proposition}
+\newcommand\Perms[2]{\tensor[_{#1}]P{_{#2}}}
+\newcommand{\minimize}{\operatornamewithlimits{minimize}}
+\newcommand{\tu}[1]{\textup{#1}}
+\newtheorem{assumption}[theorem]{Assumption}
+%\newcommand{\adj}[1]{{#1_{(1)}}}
+%\newcommand{\tlm}[1]{{#1^{(1)}}}
+\newcommand{\adj}[1]{\bar{#1}}
+\newcommand{\tlm}[1]{\dot{#1}}
+%\newcommand{\tlm}[1]{{#1^{(1)}}}
+% \setbeameroption{show notes}
+% \setbeameroption{show only notes}
+\newcommand{\mynode}[2]{%
+%\pspolygon(#1,#2)(#3,#4)(! 0.5 dup add #1 sub #2)(! #3 #2 dup add #4 sub)
+%\psframe(! 0.5 0.5 add #1 sub 1 1 add)(1 ,6)
+\psframe(! #1 0.5  sub #2 0.5 sub)(! #1 0.5  add #2 0.5 add)
+%\psline(! #1 0.5 sub #2)(! #1 0.5 add #2)
+%\rput(! #1 -0.25 #2 add){CPU}
+%\rput(! #1 0.25 #2 add){Mem.}
+}
+
+% Some macros for Taylor series
+\newcommand{\sumone}[1]{\ensuremath{\sum_{#1 = 1}^n}}
+\newcommand{\sumtwo}[2]{\ensuremath{\sum_{#1,#2 = 1}^n}}
+\newcommand{\sumthree}[3]{\ensuremath{\sum_{#1,#2,#3 = 1}^n}}
+\newcommand{\sumfour}[4]{\ensuremath{\sum_{#1,#2,#3,#4 = 1}^n}}
+\newcommand{\D}[0]{\mathrm{D}}
+
+\newcommand{\partone}[2]{\D_{#2} g_{#1}}
+%\newcommand{\parttwo}[3]{H^{#1}_{#2#3}}
+\newcommand{\parttwo}[3]{\D^2_{#2 #3} g_{#1}}
+%\newcommand{\partthree}[4]{T^{#1}_{#2#3#4}}
+\newcommand{\partthree}[4]{\D^3_{#2 #3 #4} g_{#1}}
+\newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
+%\newcommand{\vect}[1]{\boldsymbol{#1}}
+%\newcommand{\E}[1]{\mathbb{E}\left[ #1 \right]}
+
+\usepackage{array}
+\newcolumntype{x}[1]{>{\centering\arraybackslash\hspace{0pt}}p{#1}}
+\setbeameroption{hide notes}
+
+\begin{document}
+\setbeamertemplate{footline}{}
+{
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{TitleANLBlue}}
+\frame{\titlepage}
+}
+
+% \setbeamertemplate{footline}[]{\insertframenumber of \inserttotalframenumber}
+\setbeamertemplate{footline}{
+  \begin{beamercolorbox}{footlinecolor}
+    \hfill
+    \begin{minipage}[c]{3cm}
+        \tiny{{\color{anlpresentationblue} \hfill \insertframenumber{} of \inserttotalframenumber} }
+    \end{minipage}      
+    \begin{minipage}[c]{10cm}
+       {\color{white} .}
+    \end{minipage}      
+   \end{beamercolorbox}
+}
+
+\include{content}
+%\bibliographystyle{unsrtnat}
+\end{document}
+
