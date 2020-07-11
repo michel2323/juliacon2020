@@ -141,7 +141,7 @@ println( "Here we go with Julia!")
     \item {\bf Objective}
     \begin{itemize}
       \item Generation cost at generators:
-      $ minimize \sum^G_{i=1} c_i(Pg_i)$
+      $ \minimize \sum^G_{i=1} c_i(Pg_i)$
     \end{itemize}
     \item {\bf Constraints}
     \begin{itemize}
@@ -154,18 +154,86 @@ println( "Here we go with Julia!")
         G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
         P, Q &\text{ net real and reactive power entering and leaving node } k
       \end{align*}
-      \item line limits
+      \item Line limits \\
       $$ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$$
     \end{itemize}
   \end{itemize}
+\end{frame}
 
-
+\begin{frame}[fragile]
+  \frametitle{Use Interior-Point for NLP}
+  {\bf Solve}
+  \begin{align*}
+  &\minimize \phi_\mu := f(x)\\ 
+  \text{with}&\\
+  &g(x) \geq 0, \ i=1,\dots, m \\
+  &c(x) = 0, \ j=1,\dots, l \\
+  \end{align*}
+  {\bf using Newton and barrier functions}
+  \begin{align*}
+  &\minimize \phi_\mu := f(x) - \mu \sum^m_{i=1} \ln g(x)\\ 
+  \text{with}&\\
+  &c(x) = 0, \ j=1,\dots, l 
+  \end{align*}
+  \begin{itemize}
+    \item Barrier functions exacerbate ill-conditioning
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Optimal Power Flow}
-  
+      \begin{align*}
+        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
+        \text{where}\\
+        V_k &\text{ voltage magnitude at node } k\\
+        \theta &\text{ voltage angle at node } k\\
+        G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
+        P, Q &\text{ net real and reactive power entering and leaving node } k
+      \end{align*}
 \end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{\sout{Optimal} Power Flow}
+  \begin{itemize}
+    \item {\bf \sout{Objective}}
+    \begin{itemize}
+      \item \sout{Generation cost at generators:
+      $ \minimize \sum^G_{i=1} c_i(Pg_i)$}
+    \end{itemize}
+    \item {\bf Constraints}
+    \begin{itemize}
+      \item Kirchhoff's law: What flows in must flow out (nonlinear, non-convex in ACOPF)
+      \begin{align*}
+        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
+        \text{where}\\
+        V_k &\text{ voltage magnitude at node } k\\
+        \theta &\text{ voltage angle at node } k\\
+        G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
+        P, Q &\text{ net real and reactive power entering and leaving node } k
+      \end{align*}
+      \item \sout{Line limits}\\
+      \sout{$ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Power Flow}
+  {\bf Nonlinear equations}
+  \begin{itemize}
+      \item Kirchhoff's law: What flows in must flow out (nonlinear, non-convex in ACOPF)
+      \begin{align*}
+        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
+        \text{where}\\
+        V_k &\text{ voltage magnitude at node } k\\
+        \theta &\text{ voltage angle at node } k\\
+        G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
+        P, Q &\text{ net real and reactive power entering and leaving node } k
+      \end{align*}
+      \item Use Newton-Raphson to solve nonlinear equations
+  \end{itemize}
+\end{frame}
+
 
 \begin{frame}[fragile]
   \frametitle{BiCGSTAB}
@@ -210,6 +278,10 @@ end
   \end{center}
 \end{frame}
 
+\begin{frame}
+  \frametitle{}
+   \includegraphics[width=\textwidth]{figures/blocks}
+\end{frame}
 
 
 \begin{frame}
