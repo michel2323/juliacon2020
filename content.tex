@@ -228,8 +228,55 @@ println( "Here we go with Julia!")
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Derivatives}
+  \begin{center}
+  \lstset{linewidth = 0.25\textwidth, frame=tb}
+    \begin{lstlisting}
+    J\F = dx
+    x = x - dx
+    \end{lstlisting}
+  \end{center}
+  \lstset{linewidth = \textwidth}
+  {\bf Automatic Differentiation}
+  \begin{itemize}
+    \item \lstinline{F = f(x)} $\rightarrow$ \lstinline{J = jacobian(x)}
+    \item Code transformation
+    \item Adjoint \lstinline{adj(x, y) = (J(x))'*y)}, tangent: \lstinline{tgt(x,d) = J(x)*d} 
+    \item \lstinline{size(x) >> size(F)} or \lstinline{size(x) << size(F)}
+    \item number of buses $\propto$ \lstinline{size(x) = size(F)}
+    \item We use \lstinline{ForwardDiff.jl}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Jacobian Coloring}
+  \begin{center}
+    \begin{figure}
+      \includegraphics[width=0.55\textwidth]{figures/compression}
+      \caption{Jacobian compression}
+    \end{figure}
+  \end{center}
+  \begin{itemize}
+    \item Sparse power grid yields very sparse Jacobian
+    \item Using greedy algorithm in \lstinline{SparseDiffTools.jl}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{AD on GPUs in Julia}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Jacobian Coloring}
+  \begin{center}
+    \begin{figure}
+      \includegraphics[width=0.35\textwidth]{figures/directionsgpu}
+    \end{figure}
+  \end{center}
+  \begin{itemize}
+    \item Sparse power grid yields very sparse Jacobian
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -308,160 +355,10 @@ end
   \end{lstlisting}
 \end{frame}
 
-
-\begin{frame}
-  \frametitle{Multiperiod CCACOPF}
-  \begin{center}
-    \includegraphics[width=\textwidth]{figures/twostageopt}
-  \end{center}
-  \begin{center}
-  {\bf 1354 Bus network with 8 periods and 8192 scenarios}
-    \includegraphics[width=\textwidth]{figures/generators}
-  \end{center}
-\end{frame}
-
 \begin{frame}
   \frametitle{}
    \includegraphics[width=\textwidth]{figures/blocks}
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{Two-Stage Optimization: PIPS}
-  {\bf Two-Stage Problem}
-\begin{equation}
-  \begin{aligned}
-    &\min\limits_{x_0,x_1,\dots,x_s} & & \frac{1}{2} f_{Q_0}(x_0) + 
-    \frac{1}{S} \sum^{S}_{i=1} \frac{1}{2} f_{Q_i}(x_i) +  
-    \frac{1}{2}x_i^{\intercal} f_{R_i}(x_0,x_i) \\
-    &\mbox{subject to} & & c_{B_0}(x_0)\geq b_0 \\
-    && & l_0 \leq c_{D_0}(x_0) \leq u_0 \\
-    && & c_{A_i}(x_0) +c_{B_i}(x_i) = b_i \\
-    && & l_i \leq c_{C_i}(x_0) + c_{D_i}(x_i) \leq u_i
-  \end{aligned}
-  \label{eq:opt}
-  \nonumber
-\end{equation}
-    {\bf Linear system for Newton step inside the interior point method}
-  \begin{columns}
-    \begin{column}{0.3\textwidth}
-  \begin{equation} 
-    \left[ 
-    \begin{array}{ccccc}
-      K_1 & & & & B^{\intercal}_1 \\
-      & K_2 & & & B^{\intercal}_2 \\
-      & & \ddots & & \vdots \\
-      & & & K_S & B^{\intercal}_S \\
-      B_1 & B_2 & \cdots &B_S & K_0 \\
-    \end{array} 
-    \right] 
-    \label{eq:linsys}
-    \nonumber
-  \end{equation} 
-\end{column}
-    \begin{column}{0.55\textwidth}
-\[ 
-\begin{array}{c}
-K_i=
-\left[ \begin{array}{cccc}
-  \bar{Q}_i & 0 & B^{\intercal}_i & D^{\intercal}_i\\ 
-  0 & D_i^s & 0 & -I \\
-  B_i & 0 & D^y_i & 0 \\ 
-  D_i & -I & 0 & D^z_i \\ 
-\end{array} \right],\,
-B_i=
-\left[ \begin{array}{cccc}
-  R^{\intercal}_i & 0 & A^{\intercal}_i & C^{\intercal}_i\\ 
-  0 & 0 & 0 & 0 \\
-  0 & 0 & 0 & 0 \\
-  0 & 0 & 0 & 0 \\
-\end{array} \right],
-\\
-K_0=
-\left[ \begin{array}{cccc}
-  \bar{Q}_0 & 0 & B^{\intercal}_0 &
-  D^{\intercal}_0 \\ 
-  0 & D_0^s & 0 & -I \\
-  B_0 & 0 & D^y_0 & 0 \\ 
-  D_0 & -I & 0 & D^z_0   
-\end{array} \right].
-\\
-\end{array}
-\]
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Why Julia?}
-  \begin{center}
-    \includegraphics[width=0.2\textwidth]{./figures/julia}
-  \end{center}
-  \begin{itemize}
-    \item User-friendly, syntax is similar to Matlab
-    \item C-like performance.
-    \item LLVM is supported on any upcoming supercomputer
-    \item More easily (transparent) target accelerators\ldots
-    \item Just-In-Time compilation allows for augmented code (automatic
-      differentiation, uncertainy quantification, \ldots), not only input,
-      outputs, map functions
-    \item Compilation becomes part of the computation (distributed)
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Wishlist}
-  \begin{itemize}
-    \item Closer with supercomputer vendors
-    \item Native optimization solver in Julia (Interior-point, active set, BFGS)
-    \item Fast higher-order AD (second and third-order)
-    \item Support by Cray for Julia LLVMs
-    \item Support for accelerators (GPUs, FPGAs)
-    \item Julia distributed parallelism based on MPI
-    \item More stable APIs
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{References}
-  \footnotesize
-  {\bf Links}\\
-  \begin{tabular}{l}
-  \href{http://julialang.org/}{http://julialang.org/} \\
-  \href{https://github.com/StructJuMP/StructJuMP.jl}{https://github.com/StructJuMP/StructJuMP.jl}
-  \\
-  \href{https://github.com/Argonne-National-Laboratory/PIPS}{https://github.com/Argonne-National-Laboratory/PIPS}\\
-  \href{https://gitlab.com/michel2323/multi-period-ac-opf}{https://gitlab.com/michel2323/multi-period-ac-opf}\\
-  \end{tabular}
-
-
-  {\bf ExaSGD}
-  \begin{center}
-    \begin{tabular}{ccc}
-      {\bf PNNL} & {\bf ANL} & {\bf NREL} \\
-      Zhenyu (Henry) Huang & Mihai Anitescu & Wesley Jones \\
-      Bruce Palmer & Emil Constantinescu & Bri-Mathias Hodge \\
-      Jesse Holzer&  Francois Gilbert & Matthew Reynolds\\
-      Poorva Sharma & Kibaek Kim & Devon Sigler \\
-      Yuri Makarov &  Cosmin Petra  (LLNL)  & Ryan King\\
-      Stephen Elbert  &Adrian Maldonado& Clayton Barrows \\
-      Shriang Abhankar &  Michel Schanen \\
-      Gary Black \\
-    \end{tabular}
-  \end{center}
-  {\bf PIPS-NLP}
-  \begin{center}
-    \begin{tabular}{ccc}
-      Cosmin Petra & Victor Zavala & Naiyuan Chiang \\
-    \end{tabular}
-  \end{center}
-  {\bf StructJuMP}\\
-  \begin{center}
-    \begin{tabular}{ccc}
-      Cosmin Petra (LLNL) & Feng Qiang (ANL) & Joey Huchette (MIT)\\
-      Miles Lubin (MIT)\\
-    \end{tabular}
-  \end{center}
+   \includegraphics[width=\textwidth]{figures/bicgstabiter}
 \end{frame}
 
 
