@@ -22,65 +22,38 @@ println( "Here we go with Julia!")
 \end{frame}
 \begin{frame}
   \frametitle{Upcoming Supercomputers}
+    \begin{center}
+      \includegraphics[width=.25\textwidth]{./figures/ecp} \\
+      % \includegraphics[width=.75\textwidth]{./figures/go} 
+    \end{center}
   \begin{columns}[T]
     \begin{column}{0.49\textwidth}
       \begin{center}
         {\bf Aurora}\\
         \includegraphics[width=0.75\textwidth]{./figures/aurora}
       \end{center}
-    \begin{itemize}
-      \item Built by Intel, subcontractor Cray
-      \item $>$ 1 exaflops
-      \item Built on a generation of Intel Xeon Scalable processor accelerated by Intel’s Xe compute architecture.
-    \end{itemize}
     \end{column}
     \begin{column}{0.49\textwidth}
       \begin{center}
         {\bf Frontier}\\
         \includegraphics[width=0.75\textwidth]{./figures/frontier}
       \end{center}
+    \end{column}
+  \end{columns}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+    \begin{itemize}
+      \item Intel’s Xe compute architecture.
+      \item $>$ 1 exaflops
+    \end{itemize}
+    \end{column}
+    \begin{column}{0.49\textwidth}
       \begin{itemize}
         \item AMD EPYC processors and Radeon Instinct GPU
         \item 1.5 exaflops
-        \item 2021
       \end{itemize}
     \end{column}
   \end{columns}
-  \begin{itemize}
-    \item No NVIDIA architecture, no CUDA
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Funding}
-  \begin{columns}
-  \begin{column}{0.45\textwidth}
-    \begin{center}
-      \includegraphics[width=.75\textwidth]{./figures/ecp} \\
-      % \includegraphics[width=.75\textwidth]{./figures/go} 
-    \end{center}
-  \end{column}
-  \begin{column}{0.45\textwidth}
-    \begin{center}
-      % \includegraphics[width=.75\textwidth]{./figures/GMI_logo}\\
-      \includegraphics[width=.75\textwidth]{./figures/macser}
-    \end{center}
-  \end{column}
-  \end{columns}
-  \vspace{0.25cm}
-  {\bf GMLC Initiative: Modernize the US Power Grid}
-  \begin{itemize}
-    \item Resilience of the power grid 
-    \item Impact of renewables
-    \item Application driven
-    \item Micro grid
-  \end{itemize}
-  {\bf ECP Project: Optimizing Stochastic Grid Dynamics at Exascale} 
-  \begin{itemize}
-    \item Resilience of the power grid 
-    \item Impact of renewables
-    \item Computer driven
-  \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -133,6 +106,13 @@ println( "Here we go with Julia!")
 
 \begin{frame}
   \frametitle{Complex Networks}
+  \includegraphics[width=\textwidth]{figures/complexn}
+  \begin{itemize}
+    \item Examples: Traffic, Internet, power grid
+    \item Connection pattern is irregular but not random
+    \item Different from most PDE problems (CFD)
+    \item Large-scale leads to ill-conditioning
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -180,15 +160,17 @@ println( "Here we go with Julia!")
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-      \begin{align*}
-        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
-        \text{where}\\
-        V_k &\text{ voltage magnitude at node } k\\
-        \theta &\text{ voltage angle at node } k\\
-        G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
-        P, Q &\text{ net real and reactive power entering and leaving node } k
-      \end{align*}
+\begin{frame}[fragile]
+  \frametitle{Interior-Point and GPUs}
+  {\bf Current State}
+  \begin{itemize}
+    \item Very ill-conditioned system (up $1e^16$)
+    \item Requires direct solver
+    \item Ipopt only supports direct solver (exception: Pardiso)
+    \item default MUMPS, preferred are HSL libary MA27, MA57 
+    \item PIPS-NLP implements Schur complement for two-stage optimization
+    \item HiOp mixed dense-sparse solver 
+  \end{itemize}
 \end{frame}
 
 
@@ -234,6 +216,66 @@ println( "Here we go with Julia!")
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Power Flow}
+  {\bf Goal}
+  \begin{itemize}
+    \item Compute Jacobian using automatic differentiation
+    \item Implement a preconditioner
+    \item Implement a Krylov method
+    \item No computation on the host in main loop, no data transfer
+    \item All in Julia, no external calls if possible
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Derivatives}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Preconditioner}
+  \begin{center}
+    \includegraphics[width=0.25\textwidth]{figures/mpiblocks}
+    \includegraphics[width=0.25\textwidth]{figures/gpublocks}
+  \end{center}
+  {\bf Block-Jacobi}
+  \begin{itemize}
+    \item GPU implementation requires a large number of blocks
+    \item PETSc per MPI process: ILU + Krylov 
+    \item GPU: Batch CUBLAS LU
+    \item Expectation: Increase in number of blocks leads to worse preconditioner
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Preconditioner}
+  {\bf Setup}
+  \begin{itemize}
+    \item Create a partitioning (METIS)
+  \end{itemize}
+  {\bf Iterate}
+  \begin{itemize}
+    \item Update P
+    \begin{enumerate}
+      \item Read dense compressed Jacobian into dense Jacobi blocks
+      \item Batch inversion
+      \item Update sparse matrix P from dense Jacobi blocks
+    \end{enumerate}
+  \end{itemize}
+  {\bf Code size}
+  \begin{itemize}
+    \item 200 lines of code for BOTH CPU and GPU implementation
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Preconditioner}
+  \includegraphics[width=0.95\textwidth]{figures/preconditioner}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear solver}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{BiCGSTAB}
