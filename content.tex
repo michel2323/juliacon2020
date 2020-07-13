@@ -267,10 +267,25 @@
 
 \begin{frame}
   \frametitle{AD on GPUs in Julia}
+  \begin{columns}[T]
+    \begin{column}{0.35\textwidth}
+      \begin{center}
+        \vspace{0.2cm}
+        \includegraphics[width=\linewidth]{figures/compression}
+      \end{center}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \begin{center}
+        \includegraphics[width=\linewidth]{figures/simd}
+      \end{center}
+    \end{column}
+  \end{columns}
   \begin{center}
-      \includegraphics[width=0.45\textwidth]{figures/compression}
-      \includegraphics[width=0.55\textwidth]{figures/simd}
   \end{center}
+  {\bf SIMD over sparsity colors}
+  \begin{itemize}
+    \item Change from \lstinline{F = f(x)} to \lstinline{J = f(x)} on GPUs is a type change from \lstinline{Vector\{Float64\}} to \lstinline{CuVector\{t1s\{c\}\}}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
