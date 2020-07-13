@@ -231,11 +231,13 @@ println( "Here we go with Julia!")
 \begin{frame}[fragile]
   \frametitle{Derivatives}
   \begin{center}
-  \lstset{linewidth = 0.25\textwidth, frame=tb}
+  \lstset{linewidth = \textwidth, frame=tb}
+  \begin{minipage}{.3\textwidth}
     \begin{lstlisting}
-    J\F = dx
-    x = x - dx
+    dx .= J\F
+    x  .= x .- dx
     \end{lstlisting}
+   \end{minipage}
   \end{center}
   \lstset{linewidth = \textwidth}
   {\bf Automatic Differentiation}
@@ -245,7 +247,7 @@ println( "Here we go with Julia!")
     \item Adjoint \lstinline{adj(x, y) = (J(x))'*y)}, tangent: \lstinline{tgt(x,d) = J(x)*d} 
     \item \lstinline{size(x) >> size(F)} or \lstinline{size(x) << size(F)}
     \item number of buses $\propto$ \lstinline{size(x) = size(F)}
-    \item We use \lstinline{ForwardDiff.jl}
+    \item We use \lstinline{ForwardDiff.jl}\footnote{\cite{RevelsLubinPapamarkou2016}}
   \end{itemize}
 \end{frame}
 
@@ -281,6 +283,7 @@ println( "Here we go with Julia!")
     \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
     \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
     \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
+    \item Relying on \lstinline{CUDA.jl} \footnote{\cite{besard2018juliagpu}} \footnote{\cite{besard2019prototyping}}
   \end{itemize}
 \end{frame}
 
