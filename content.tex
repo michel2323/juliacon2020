@@ -253,7 +253,7 @@ println( "Here we go with Julia!")
   \frametitle{Jacobian Coloring}
   \begin{center}
     \begin{figure}
-      \includegraphics[width=0.55\textwidth]{figures/compression}
+      \includegraphics[width=0.65\textwidth]{figures/compression}\footnote{Thanks to Paul Hovland}
       \caption{Jacobian compression}
     \end{figure}
   \end{center}
@@ -265,6 +265,31 @@ println( "Here we go with Julia!")
 
 \begin{frame}
   \frametitle{AD on GPUs in Julia}
+  \begin{center}
+      \includegraphics[width=0.55\textwidth]{figures/F}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{AD on GPUs in Julia}
+  \begin{center}
+    \lstinline{F = T(undef, n)}
+  \end{center}
+  \begin{itemize}
+    \item Float vector: \lstinline{T = Vector\{Float64\}}
+    \item Arbitrary precision vector : \lstinline{T = Vector\{BigFloat\}}
+    \item First-order tangent: \lstinline{t1s\{N\} =  ForwardDiff.Dual\{Nothing,Float64, N\} where N}
+    \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
+    \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
+    \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{AD on GPUs in Julia}
+  \begin{center}
+      \includegraphics[width=0.45\textwidth]{figures/compression}
+      \includegraphics[width=0.55\textwidth]{figures/simd}
+  \end{center}
 \end{frame}
 
 \begin{frame}
@@ -276,6 +301,11 @@ println( "Here we go with Julia!")
   \end{center}
   \begin{itemize}
     \item Sparse power grid yields very sparse Jacobian
+    \item Number of colors for 9,241 bus system: 76, Hessian size: 580587x580587, compressed: 580587x76
+    \item GPU strategy: Effectively SIMD parallelize over colors/directions
+    \item Sweet spot on NVIDIA GV100: Chunks of 32 directions (see Figure)
+    \item 0.3ms per color
+    \item We don’t expect number colors to exceed 500 for final case
   \end{itemize}
 \end{frame}
 
@@ -288,7 +318,7 @@ println( "Here we go with Julia!")
   {\bf Block-Jacobi}
   \begin{itemize}
     \item GPU implementation requires a large number of blocks
-    \item PETSc per MPI process: ILU + Krylov 
+    \item PETSc per MPI process: ILU + Krylov \footnote{\cite{schwarz}} 
     \item GPU: Batch CUBLAS LU
     \item Expectation: Increase in number of blocks leads to worse preconditioner
   \end{itemize}
@@ -322,45 +352,41 @@ println( "Here we go with Julia!")
 
 \begin{frame}
   \frametitle{Linear solver}
+  {\bf Tour de Solvers}
+  \begin{itemize}
+    \item Indefinite sparse direct solvers: MA27, MA57, MUMPS, SQPR, CUSOLVER, SPRAL SSIDS
+    \item Indefinite dense direct solvers: BLAS, CUBLAS
+    \item Sparse positive definite solvers: CHOLMOD, SPRAL SSIDS
+    \item Iterative solvers: \lstinline{IterativeSolvers.jl}, \lstinline{Krylov.jl} 
+    \item GMRES and BiCGSTAB \footnote{\cite{bicgstabVorst}}, \footnote{\cite{sleijpen1993bicgstab}}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{BiCGSTAB}
-  \begin{lstlisting}[language=julia, style=jlcodestyle]
-function bicgstab(A, b, P, xi, to = nothing; tol = 1e-6, maxiter = size(A,1),
-                 verbose=false)
-  ...
-  go = true
-  iter = 1
-  while go
-    rhoi1 = dot(br0, ri) ; beta = (rhoi1/rhoi) * (alpha / omegai)
-    pi1 .= ri .+ beta .* (pi .- omegai .* vi)
-    y .= P * pi1
-    vi1 .= A * y
-    alpha = rhoi1 / dot(br0, vi1)
-    s .= ri .- (alpha * vi1)
-    z .= P * s
-    t .= A * z
-    t1 .= P * t
-    t2 .= P * s
-    omegai1 = dot(t1, t2) / dot(t1, t1)
-    xi1 .= xi .+ alpha .* y .+ omegai1 .* z
-  
-    anorm = norm((A * xi1) .- b)
-    ...
-
-  end
-  return xi, iter
-end
-  \end{lstlisting}
+  \frametitle{Linear Solver}
+  \begin{center}
+   \includegraphics[width=0.7\textwidth]{figures/bicgstab.png}
+  \end{center}
 \end{frame}
 
 \begin{frame}
-  \frametitle{}
-   \includegraphics[width=\textwidth]{figures/blocks}
-   \includegraphics[width=\textwidth]{figures/bicgstabiter}
+  \frametitle{Preconditioner and Linear Solver}
+  \begin{center}
+   \includegraphics[width=0.45\textwidth]{figures/blocks}
+   \includegraphics[width=0.45\textwidth]{figures/bicgstabiter}
+  \end{center}
+  \begin{itemize}
+    \item 
+  \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Outlook}
+  \begin{itemize}
+    \item SIMD modeling framework
+    \item Reduced gradient method
+  \end{itemize}
+\end{frame}
 
 
 
