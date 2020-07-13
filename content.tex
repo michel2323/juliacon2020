@@ -164,8 +164,8 @@ println( "Here we go with Julia!")
   \frametitle{Interior-Point and GPUs}
   {\bf Current State}
   \begin{itemize}
-    \item Very ill-conditioned system (up $1e^16$)
-    \item Requires direct solver
+    \item Very ill-conditioned system (up $1e^{16}$)
+    \item Requires sparse direct inertia revealing solver
     \item Ipopt only supports direct solver (exception: Pardiso)
     \item default MUMPS, preferred are HSL libary MA27, MA57 
     \item PIPS-NLP implements Schur complement for two-stage optimization
@@ -276,7 +276,7 @@ println( "Here we go with Julia!")
   \end{center}
   \begin{itemize}
     \item Float vector: \lstinline{T = Vector\{Float64\}}
-    \item Arbitrary precision vector : \lstinline{T = Vector\{BigFloat\}}
+    \item Arbitrary precision vector: \lstinline{T = Vector\{BigFloat\}}
     \item First-order tangent: \lstinline{t1s\{N\} =  ForwardDiff.Dual\{Nothing,Float64, N\} where N}
     \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
     \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
@@ -358,7 +358,7 @@ println( "Here we go with Julia!")
     \item Indefinite dense direct solvers: BLAS, CUBLAS
     \item Sparse positive definite solvers: CHOLMOD, SPRAL SSIDS
     \item Iterative solvers: \lstinline{IterativeSolvers.jl}, \lstinline{Krylov.jl} 
-    \item GMRES and BiCGSTAB \footnote{\cite{bicgstabVorst}}, \footnote{\cite{sleijpen1993bicgstab}}
+    \item GMRES and BiCGSTAB \footnote{\cite{bicgstabVorst}} \footnote{\cite{sleijpen1993bicgstab}}
   \end{itemize}
 \end{frame}
 
