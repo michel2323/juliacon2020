@@ -1,25 +1,5 @@
 % DO NOT COMPILE THIS FILE DIRECTLY!
 % This is included by the other .tex files.
-\begin{frame}[fragile]
-  \frametitle{Overview}
-  \begin{itemize}
-    \item Upcoming computers
-    \item ECP project
-    \item exanauts
-    \item complex networks
-    \item ACOPF (Ipopt and linear solvers)
-    \item SCOPF (PIPS and linear solvers)
-    \item HiOp (Current-Voltage Rectangular Formulation)
-    \item SIMD
-    \item 
-
-
-  \end{itemize}
-  \begin{lstlisting}
-# some julia code
-println( "Here we go with Julia!")
-\end{lstlisting}
-\end{frame}
 \begin{frame}
   \frametitle{Upcoming Supercomputers}
     \begin{center}
@@ -67,12 +47,10 @@ println( "Here we go with Julia!")
         % \includegraphics[width=0.8\textwidth]{figures/DampedSine.png}
       \end{center}
       \begin{itemize}
-        \item Protect against contingency
-        \item Demand is unknown
-        \item Generation is unkown (solar, wind, water)
-        \item Grid is inherently damped
-        \item Steady state, power system dynamics
-        \item Reduce outliers, interested in the tails
+        \item Protect against contingency scenarios
+        \item Demand is uncertain
+        \item Generation is uncertain (solar, wind, water)
+        \item Less mass in generators leads to less inertia
       \end{itemize}
     \end{column}
   \end{columns}
@@ -372,23 +350,101 @@ println( "Here we go with Julia!")
   \end{center}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{ExaPF.jl}
+  \begin{lstlisting}
+    pkg> instantiate
+    julia> target = "cuda" 
+    julia> include("examples/pf.jl") 
+    julia> datafile = "test/case14.raw"
+    julia> sol, conv, res = pf(datafile, 8, "bicgstab") # slow
+    julia> sol, conv, res = pf(datafile, 8, "bicgstab")
+  \end{lstlisting}
+  \begin{itemize}
+    \item \url{https://exanauts.github.io/}
+    \item Julia for Summit builds
+    \item Other research software
+    \item \url{https://github.com/exanauts/ExaPF.jl}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{ExaPF.jl}
+  {\bf 30,000 bus system}
+  \begin{lstlisting}
+    julia> datafile = "GO-Data/.../Network_30R-025/.../case.raw"
+    julia> sol, conv, res = pf(datafile, 1000, "bicgstab")
+  \end{lstlisting}
+  \begin{itemize}
+    \item \lstinline{size(J)} = 57,721 $\times$ 57,721 
+    \item Block Jacobi size: 59 $\times$ 59 $\approx$ 25 MB
+    \item Total GPU memory usage: 5 GB
+    \item Number of Jacobian colors: 29
+    \item 4 Newton iterations with $tol = 1e^{-6}$, total BiCGSTAB iterations: 3,752 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{ExaPF.jl}
+  {\bf 30,000 bus system}
+  \begin{itemize}
+    \item \lstinline{size(J)} = 57,721 $\times$ 57,721 
+    \item Block Jacobi size: 59 $\times$ 59 $\approx$ 25 MB
+    \item Total GPU memory usage: 5 GB
+    \item Number of Jacobian colors: 29
+    \item 4 Newton iterations with $tol = 1e^{-6}$, total BiCGSTAB iterations: 3,752 
+  \end{itemize}
+  \begin{center}
+   \includegraphics[width=0.45\textwidth]{figures/timings}
+  \end{center}
+\end{frame}
+
 \begin{frame}
-  \frametitle{Preconditioner and Linear Solver}
+  \frametitle{ExaPF.jl}
+  {\bf Context}
+  \begin{itemize}
+    \item CUSOLVE: 10s 
+    \item Sparse Julia \lstinline{J\F} (probably UMFPACK): 3.49s 
+    \item Block Jacobi + BiCGSTAB in ExaPF.jl
+    \begin{itemize}
+      \item Jacobian: 14.2 ms
+      \item Preconditioner: 357 ms
+      \item BiCGSTAB: 4.42s
+      \item Total: 4.8s
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{ExaPF.jl}
+  {\bf BiCGSTAB iterations with decreasing block size}
   \begin{center}
    \includegraphics[width=0.45\textwidth]{figures/blocks}
    \includegraphics[width=0.45\textwidth]{figures/bicgstabiter}
   \end{center}
   \begin{itemize}
-    \item 
+    \item Smaller blocks decrease memory footprint by $\frac{1}{n}$ 
+    \item Smaller blocks speed up application of preconditioner in BiCGSTAB $P * x$
+    \item BiCGSTAB unimpressed by smaller block sizes, however FAILS to converge without preconditioner
+    \item Block Jacobi size: 464 $\times$ 464 $\approx$ 200 MB
+    \item 4 Newton iterations with $tol = 1e^{-6}$
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Outlook}
+  \frametitle{Conclusions}
   \begin{itemize}
+    \item Much harder systems for OPF with inequality constraints
+    \item Other GPU first preconditioners
+    \item Rapid prototyping in Julia is fast
     \item SIMD modeling framework
-    \item Reduced gradient method
+    \item Reduced gradient method for OPF
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \printbibliography
 \end{frame}
 
 
