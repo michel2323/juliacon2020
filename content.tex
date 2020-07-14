@@ -50,7 +50,8 @@
         \item Protect against contingency scenarios
         \item Demand is uncertain
         \item Generation is uncertain (solar, wind, water)
-        \item Less mass in generators leads to less inertia
+        \item Recent developments in renewable energies lead to less mass in generators decreasing inertia
+        \item Less inertia worsens effects of uncertainty
       \end{itemize}
     \end{column}
   \end{columns}
@@ -89,7 +90,7 @@
     \item Examples: Traffic, Internet, power grid
     \item Connection pattern is irregular but not random
     \item Different from most PDE problems (CFD)
-    \item Large-scale leads to ill-conditioning
+    \item Larger cases tend to lead to ill-conditioning
   \end{itemize}
 \end{frame}
 
@@ -246,7 +247,7 @@
 \begin{frame}
   \frametitle{AD on GPUs in Julia}
   \begin{center}
-      \includegraphics[width=0.55\textwidth]{figures/F}
+      \includegraphics[width=0.75\textwidth]{figures/F}
   \end{center}
 \end{frame}
 \begin{frame}
@@ -457,9 +458,8 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{References}
-  \printbibliography
+\begin{frame}[noframenumbering,plain,allowframebreaks]{References}
+    \printbibliography[heading=none]
 \end{frame}
 
 
