@@ -99,7 +99,7 @@
   \begin{itemize}
     \item Examples: traffic, Internet, pipelines, power grid
     \item Connection pattern is irregular but not random
-    \item Different from most PDE problems (CFD)
+    \item Different from most PDE problems (e.g. CFD)
     \item Larger cases tend to lead to ill-conditioning
   \end{itemize}
 \end{frame}
@@ -225,8 +225,6 @@
 \begin{frame}[fragile]
   \frametitle{Derivatives}
   {\bf Newton-Raphson}
-  \begin{center}
-  % \lstset{linewidth = \textwidth}
   \begin{minipage}{0.8\textwidth}
     \begin{lstlisting}
     go = true
@@ -237,13 +235,12 @@
     end
     \end{lstlisting}
    \end{minipage}
-  \end{center}
-  % \lstset{linewidth = \textwidth}
   {\bf Automatic Differentiation}
   \begin{itemize}
     \item \lstinline{F = f(x)} $\rightarrow$ \alert{\lstinline{J = jacobian(x)}}\footnote{\cite{RevelsLubinPapamarkou2016}}
-    \item {\color{green} Adjoint} \lstinline{adj(x, y) = (J(x))'*y)}, tangent: \lstinline{tgt(x,d) = J(x)*d} 
-    % \item \lstinline[basicstyle=\color{green}]{size(x) >> size(F)} or \lstinline[basicstyle=\color{red}]{size(x) << size(F)}
+    \item Two modes: \Colorbox{green}{Adjoint} or \Colorbox{red}{tangent}
+    \item \Colorbox{green}{\lstinline{adj(x, y) = (J(x))'*y)}}, \Colorbox{red}{\lstinline{tgt(x,d) = J(x)*d}} 
+    \item \Colorbox{green}{\lstinline{size(x) >> size(F)}} or \Colorbox{red}{\lstinline{size(x) <= size(F)}}
     \item number of buses $\propto$ \lstinline{size(x) = size(F)}
   \end{itemize}
 \end{frame}
@@ -258,7 +255,7 @@
   \end{center}
   \begin{itemize}
     \item Using greedy algorithm in \lstinline{SparseDiffTools.jl}
-    \item To get full Jacobian, one has to do $c$ times \lstinline{jacvec(d) = J*d}
+    \item To get full Jacobian, one has to do $c$ times \lstinline{tgt(x,d) = J(x)*d}
     \item Complexity for Jacobian goes from $\bigo{n} \times cost(f)$ to $\bigo{c} \times cost(f)$
   \end{itemize}
 \end{frame}
@@ -542,6 +539,7 @@
     \item Rapid prototyping in Julia is fast
     \item SIMD modeling framework
     \item Reduced gradient method for OPF
+    \item Support for GPU Arrays on Intel and AMD GPUs
   \end{itemize}
 \end{frame}
 
