@@ -87,7 +87,7 @@
   \frametitle{Complex Networks}
   \includegraphics[width=\textwidth]{figures/complexn}
   \begin{itemize}
-    \item Examples: Traffic, Internet, power grid
+    \item Examples: traffic, Internet, pipelines, power grid
     \item Connection pattern is irregular but not random
     \item Different from most PDE problems (CFD)
     \item Larger cases tend to lead to ill-conditioning
@@ -144,7 +144,7 @@
   {\bf Current State}
   \begin{itemize}
     \item Very ill-conditioned system (up $1e^{16}$)
-    \item Requires sparse direct inertia revealing solver
+    \item Requires indefinite sparse direct inertia revealing solver
     \item Ipopt only supports direct solver (exception: Pardiso)
     \item default MUMPS, preferred are HSL libary MA27, MA57 
     \item PIPS-NLP implements Schur complement for two-stage optimization
@@ -354,14 +354,20 @@
     \item Indefinite sparse direct solvers: MA27, MA57, MUMPS, SQPR, CUSOLVER, SPRAL SSIDS
     \item Indefinite dense direct solvers: BLAS, CUBLAS
     \item Sparse positive definite solvers: CHOLMOD, SPRAL SSIDS
-    \item Iterative solvers: \lstinline{IterativeSolvers.jl}, \lstinline{Krylov.jl} 
-    \item GMRES and BiCGSTAB \footnote{\cite{bicgstabVorst}} \footnote{\cite{sleijpen1993bicgstab}}
+    \item Iterative solvers: \lstinline{IterativeSolvers.jl}, \lstinline{Krylov.jl}, PETSc 
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{Linear solver}
   {\bf GMRES vs. BiCGSTAB}
+  \begin{center}
+   \includegraphics[width=0.7\textwidth]{figures/gmresbicgstab.png}
+  \end{center}
+  \begin{itemize}
+    \item GMRES and BiCGSTAB \footnote{\cite{bicgstabVorst}} \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
+    \item GMRES in \lstinline{Krylov.jl}, no BiCGSTAB 
+  \end{itemize}
 \end{frame}
 
 
