@@ -1,6 +1,16 @@
 % DO NOT COMPILE THIS FILE DIRECTLY!
 % This is included by the other .tex files.
 \begin{frame}
+  \frametitle{Overview}
+  \begin{itemize}
+    \item Motivation
+    \item Automatic Differentiation
+    \item Preconditioner
+    \item Linear Solver
+    \item Results
+  \end{itemize}
+\end{frame}
+\begin{frame}
   \frametitle{Upcoming Supercomputers}
     \begin{center}
       \includegraphics[width=.25\textwidth]{./figures/ecp} \\
@@ -100,20 +110,20 @@
     \item {\bf Objective}
     \begin{itemize}
       \item Generation cost at generators:
-      $ \minimize \sum^G_{i=1} c_i(Pg_i)$
+      $ \minimize \sum^G_{i=1} c_i(P_{g_i})$, where $c_i$ is the cost of generator $g_i$
     \end{itemize}
     \item {\bf Constraints}
     \begin{itemize}
       \item Kirchhoff's law: What flows in must flow out (nonlinear, non-convex in ACOPF)
       \begin{align*}
-        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
+        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P_k - j Q_k,\ k = 1, \dots, N \\
         \text{where}\\
         V_k &\text{ voltage magnitude at node } k\\
         \theta &\text{ voltage angle at node } k\\
         G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
-        P, Q &\text{ net real and reactive power entering and leaving node } k
+        P_k , Q_k &\text{ net real and reactive power entering and leaving node } k
       \end{align*}
-      \item Line limits \\
+      \item Line limits:
       $$ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$$
     \end{itemize}
   \end{itemize}
@@ -123,7 +133,7 @@
   \frametitle{Use Interior-Point for NLP}
   {\bf Solve}
   \begin{align*}
-  &\minimize \phi_\mu := f(x)\\ 
+  &\minimize f(x)\\ 
   \text{with}&\\
   &g(x) \geq 0, \ i=1,\dots, m \\
   &c(x) = 0, \ j=1,\dots, l \\
@@ -159,21 +169,20 @@
     \item {\bf \sout{Objective}}
     \begin{itemize}
       \item \sout{Generation cost at generators:
-      $ \minimize \sum^G_{i=1} c_i(Pg_i)$}
+      $ \minimize \sum^G_{i=1} c_i(P_{g_i})$, where $c_i$ is the cost of generator $g_i$}
     \end{itemize}
     \item {\bf Constraints}
     \begin{itemize}
       \item Kirchhoff's law: What flows in must flow out (nonlinear, non-convex in ACOPF)
       \begin{align*}
-        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
+        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P_k - j Q_k,\ k = 1, \dots, N \\
         \text{where}\\
         V_k &\text{ voltage magnitude at node } k\\
         \theta &\text{ voltage angle at node } k\\
         G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
-        P, Q &\text{ net real and reactive power entering and leaving node } k
+        P_k , Q_k &\text{ net real and reactive power entering and leaving node } k
       \end{align*}
-      \item \sout{Line limits}\\
-      \sout{$ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$}
+      \item \sout{Line limits: $ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$}
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -196,8 +205,8 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Power Flow}
-  {\bf Goal}
+  \frametitle{Implementation}
+  {\bf Goals}
   \begin{itemize}
     \item Compute Jacobian using automatic differentiation
     \item Implement a preconditioner
@@ -207,26 +216,35 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{}
+  \centering
+  {\Huge Automatic Differentiation}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Derivatives}
+  {\bf Newton-Raphson}
   \begin{center}
-  \lstset{linewidth = \textwidth, frame=tb}
-  \begin{minipage}{.3\textwidth}
+  % \lstset{linewidth = \textwidth}
+  \begin{minipage}{0.8\textwidth}
     \begin{lstlisting}
-    dx .= J\F
-    x  .= x .- dx
+    go = true
+    while(go)
+      dx .= jacobian(x)\f(x)
+      x  .= x .- dx
+      go = norm(f(x)) < tol ? true : false
+    end
     \end{lstlisting}
    \end{minipage}
   \end{center}
-  \lstset{linewidth = \textwidth}
+  % \lstset{linewidth = \textwidth}
   {\bf Automatic Differentiation}
   \begin{itemize}
-    \item \lstinline{F = f(x)} $\rightarrow$ \lstinline{J = jacobian(x)}
-    \item Code transformation
-    \item Adjoint \lstinline{adj(x, y) = (J(x))'*y)}, tangent: \lstinline{tgt(x,d) = J(x)*d} 
-    \item \lstinline{size(x) >> size(F)} or \lstinline{size(x) << size(F)}
+    \item \lstinline{F = f(x)} $\rightarrow$ \alert{\lstinline{J = jacobian(x)}}\footnote{\cite{RevelsLubinPapamarkou2016}}
+    \item {\color{green} Adjoint} \lstinline{adj(x, y) = (J(x))'*y)}, tangent: \lstinline{tgt(x,d) = J(x)*d} 
+    % \item \lstinline[basicstyle=\color{green}]{size(x) >> size(F)} or \lstinline[basicstyle=\color{red}]{size(x) << size(F)}
     \item number of buses $\propto$ \lstinline{size(x) = size(F)}
-    \item We use \lstinline{ForwardDiff.jl}\footnote{\cite{RevelsLubinPapamarkou2016}}
   \end{itemize}
 \end{frame}
 
@@ -239,8 +257,9 @@
     \end{figure}
   \end{center}
   \begin{itemize}
-    \item Sparse power grid yields very sparse Jacobian
     \item Using greedy algorithm in \lstinline{SparseDiffTools.jl}
+    \item To get full Jacobian, one has to do $c$ times \lstinline{jacvec(d) = J*d}
+    \item Complexity for Jacobian goes from $\bigo{n} \times cost(f)$ to $\bigo{c} \times cost(f)$
   \end{itemize}
 \end{frame}
 
@@ -290,19 +309,27 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Jacobian Coloring}
-  \begin{center}
-    \begin{figure}
-      \includegraphics[width=0.35\textwidth]{figures/directionsgpu}
-    \end{figure}
-  \end{center}
+  \frametitle{}
+  \centering
+  {\Huge Preconditioner}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear solver}
+  {\bf Tour de Solvers, solver we have experience with}
+  \begin{table}
+  \begin{tabular}{p{5cm}|lll}
+    MA27, MA57, MUMPS, SPQR, CUSOLVER, SPRAL SSIDS & indefinite & sparse & direct \\
+    \hline
+    BLAS, CUBLAS & indefinite & dense  & direct \\
+    \hline
+    CHOLMOD, SPRAL SSIDS& positive definite & sparse & direct \\
+    \hline
+    \lstinline{IterativeSolvers.jl}, \lstinline{Krylov.jl}, PETSc & indefinite & sparse & iterative \\ 
+  \end{tabular}
+\end{table}
   \begin{itemize}
-    \item Sparse power grid yields very sparse Jacobian
-    \item Number of colors for 9,241 bus system: 76, Hessian size: 580587x580587, compressed: 580587x76
-    \item GPU strategy: Effectively SIMD parallelize over colors/directions
-    \item Sweet spot on NVIDIA GV100: Chunks of 32 directions (see Figure)
-    \item 0.3ms per color
-    \item We don’t expect number colors to exceed 500 for final case
+    \item Best for GPU: Iterative
   \end{itemize}
 \end{frame}
 
@@ -316,7 +343,7 @@
   \begin{itemize}
     \item GPU implementation requires a large number of blocks
     \item PETSc per MPI process: ILU + Krylov \footnote{\cite{schwarz}} 
-    \item GPU: Batch CUBLAS LU
+    \item GPU: Batch CUBLAS LU inversion
     \item Expectation: Increase in number of blocks leads to worse preconditioner
   \end{itemize}
 \end{frame}
@@ -327,15 +354,24 @@
   \begin{itemize}
     \item Create a partitioning (METIS)
   \end{itemize}
-  {\bf Iterate}
-  \begin{itemize}
-    \item Update P
+  {\bf Update P}
+  \begin{tabular}{m{0.15\textwidth}m{0.05\textwidth}m{0.3\textwidth}m{0.05\textwidth}m{0.3\textwidth}}
+        \includegraphics[width=0.15\textwidth]{./figures/compressed}
+    &
+    {\Huge $\rightarrow$}
+    &
+        \includegraphics[width=0.3\textwidth]{figures/gpublocks}
+    &
+    {\Huge $\rightarrow$}
+    &
+        \includegraphics[width=0.3\textwidth]{./figures/csr}
+    \\
+  \end{tabular}
     \begin{enumerate}
       \item Read dense compressed Jacobian into dense Jacobi blocks
       \item Batch inversion
       \item Update sparse matrix P from dense Jacobi blocks
     \end{enumerate}
-  \end{itemize}
   {\bf Code size}
   \begin{itemize}
     \item 200 lines of code for BOTH CPU and GPU implementation
@@ -348,14 +384,9 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Linear solver}
-  {\bf Tour de Solvers}
-  \begin{itemize}
-    \item Indefinite sparse direct solvers: MA27, MA57, MUMPS, SQPR, CUSOLVER, SPRAL SSIDS
-    \item Indefinite dense direct solvers: BLAS, CUBLAS
-    \item Sparse positive definite solvers: CHOLMOD, SPRAL SSIDS
-    \item Iterative solvers: \lstinline{IterativeSolvers.jl}, \lstinline{Krylov.jl}, PETSc 
-  \end{itemize}
+  \frametitle{}
+  \centering
+  {\Huge Linear Solver}
 \end{frame}
 
 \begin{frame}
@@ -376,6 +407,35 @@
   \begin{center}
    \includegraphics[width=0.7\textwidth]{figures/bicgstab.png}
   \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{SIMD on GPUs in Julia}
+  \begin{center}
+      \includegraphics[width=0.75\textwidth]{figures/F}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{AD on GPUs in Julia}
+  \begin{center}
+    \lstinline{F = T(undef, n)}
+  \end{center}
+  \begin{itemize}
+    \item Float vector: \lstinline{T = Vector\{Float64\}}
+    \item Arbitrary precision vector: \lstinline{T = Vector\{BigFloat\}}
+    \item First-order tangent: \lstinline{t1s\{N\} =  ForwardDiff.Dual\{Nothing,Float64, N\} where N}
+    \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
+    \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
+    \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
+    \item Relying on \lstinline{CUDA.jl} \footnote{\cite{besard2018juliagpu}} \footnote{\cite{besard2019prototyping}}
+    \item \alert{broadcast operator \lstinline{x .= a .* b}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{}
+  \centering
+  {\Huge Results}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -412,18 +472,19 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Results}
+  \begin{itemize}
+    \item Code runs on local workstation {\it moonshot} and Summit
+    \item NVIDIA Quadro GV100 based on Volta 
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{ExaPF.jl}
   {\bf 30,000 bus system}
-  \begin{itemize}
-    \item \lstinline{size(J)} = 57,721 $\times$ 57,721 
-    \item Block Jacobi size: 59 $\times$ 59 $\approx$ 25 MB
-    \item Total GPU memory usage: 5 GB
-    \item Number of Jacobian colors: 29
-    \item 4 Newton iterations with $tol = 1e^{-6}$, total BiCGSTAB iterations: 3,752 
-  \end{itemize}
   \begin{center}
-   \includegraphics[width=0.45\textwidth]{figures/timings}
+   \includegraphics[width=0.8\textwidth]{figures/timings}
   \end{center}
 \end{frame}
 
@@ -432,7 +493,7 @@
   {\bf Context}
   \begin{itemize}
     \item CUSOLVE: 10s 
-    \item Sparse Julia \lstinline{J\F} (probably UMFPACK): 3.49s 
+    \item Sparse Julia \lstinline{J\\F} (probably UMFPACK): 3.49s 
     \item Block Jacobi + BiCGSTAB in ExaPF.jl
     \begin{itemize}
       \item Jacobian: 14.2 ms
@@ -440,6 +501,22 @@
       \item BiCGSTAB: 4.42s
       \item Total: 4.8s
     \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hessian and Jacobian Coloring}
+  \begin{center}
+    \begin{figure}
+      \includegraphics[width=0.45\textwidth]{figures/directionsgpu}
+    \end{figure}
+  \end{center}
+  \begin{itemize}
+    \item Number of colors for 9,241 bus system: 76, Hessian size: 580,587$\times$580,587, compressed: 580,587$\times$76
+    \item GPU strategy: Effectively SIMD parallelize over colors/directions
+    \item Sweet spot on NVIDIA GV100: Chunks of 32 directions (see Figure)
+    \item 0.3ms per color
+    \item We don’t expect number colors to exceed 500 for final case
   \end{itemize}
 \end{frame}
 
@@ -454,8 +531,6 @@
     \item Smaller blocks decrease memory footprint by $\frac{1}{n}$ 
     \item Smaller blocks speed up application of preconditioner in BiCGSTAB $P * x$
     \item BiCGSTAB unimpressed by smaller block sizes, however FAILS to converge without preconditioner
-    \item Block Jacobi size: 464 $\times$ 464 $\approx$ 200 MB
-    \item 4 Newton iterations with $tol = 1e^{-6}$
   \end{itemize}
 \end{frame}
 
