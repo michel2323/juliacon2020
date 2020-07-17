@@ -109,7 +109,7 @@
   \begin{itemize}
     \item {\bf Objective}
     \begin{itemize}
-      \item Generation cost at generators:
+      \item Generation $P_g$ and its cost $c$ at generators $g_i$:
       $ \minimize \sum^G_{i=1} c_i(P_{g_i})$, where $c_i$ is the cost of generator $g_i$
     \end{itemize}
     \item {\bf Constraints}
@@ -123,7 +123,7 @@
         G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
         P_k , Q_k &\text{ net real and reactive power entering and leaving node } k
       \end{align*}
-      \item Line limits:
+      \item Line limits defined through voltage angles $\theta$ at the buses $m$ and $n$:
       $$ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$$
     \end{itemize}
   \end{itemize}
@@ -201,6 +201,7 @@
         P, Q &\text{ net real and reactive power entering and leaving node } k
       \end{align*}
       \item Use Newton-Raphson to solve nonlinear equations
+      \item Reference implementation: MATPOWER in Matlab
   \end{itemize}
 \end{frame}
 
