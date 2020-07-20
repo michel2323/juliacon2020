@@ -1,16 +1,6 @@
 % DO NOT COMPILE THIS FILE DIRECTLY!
 % This is included by the other .tex files.
 \begin{frame}
-  \frametitle{Overview}
-  \begin{itemize}
-    \item Motivation
-    \item Automatic Differentiation
-    \item Preconditioner
-    \item Linear Solver
-    \item Results
-  \end{itemize}
-\end{frame}
-\begin{frame}
   \frametitle{Upcoming Supercomputers}
     \begin{center}
       \includegraphics[width=.25\textwidth]{./figures/ecp} \\
@@ -68,44 +58,16 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{ExaSGD: Optimizing Stochastic Grid Dynamics at Exascale
-}
-\begin{columns}
-  \begin{column}{0.45\textwidth}
-    \includegraphics[width=\textwidth]{./figures/generation}
-  \end{column}
-  \begin{column}{0.45\textwidth}
-    \includegraphics[width=\textwidth]{./figures/ramping}
-  \end{column}
-\end{columns}
-  \begin{center}
-      \end{center}
-  {\bf Motivation:}
-  \begin{itemize}
-    \item More renewable energy, more uncertainty
-    \item Increase in renewable energy generation ramping
-  \end{itemize}
-  {\bf Goals:}
-  \begin{itemize}
-    \item Useful long-term planning model under higher uncertainty
-    \item Use AC power flow (nonlinear functions) 
-    \item Efficiently leverage exascale hardware in 2021
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
   \frametitle{Complex Networks}
   \includegraphics[width=\textwidth]{figures/complexn}
   \begin{itemize}
     \item Examples: traffic, Internet, pipelines, power grid
     \item Connection pattern is irregular but not random
-    \item Different from most PDE problems (e.g. CFD)
-    \item Larger cases tend to lead to ill-conditioning
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Optimal Power Flow}
+  \frametitle{NLP: Alternate Current Optimal Power Flow}
   \begin{itemize}
     \item {\bf Objective}
     \begin{itemize}
@@ -153,13 +115,42 @@
   \frametitle{Interior-Point and GPUs}
   {\bf Current State}
   \begin{itemize}
+    \item De facto standard solver: Ipopt
     \item Very ill-conditioned system (up $1e^{16}$)
     \item Requires indefinite sparse direct inertia revealing solver
     \item Ipopt only supports direct solver (exception: Pardiso)
     \item default MUMPS, preferred are HSL libary MA27, MA57 
-    \item PIPS-NLP implements Schur complement for two-stage optimization
-    \item HiOp mixed dense-sparse solver 
+    \item PIPS-NLP \footnote{\cite{pips}} \footnote{https://github.com/Argonne-National-Laboratory/PIPS} implements Schur complement for two-stage optimization
+    \item HiOp\footnote{https://github.com/LLNL/hiop} mixed dense-sparse solver 
   \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Distributed Parallel Interior-Point Solvers}
+  \begin{center}
+    \includegraphics[width=0.65\textwidth]{figures/twostageopt}
+  \end{center}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      {\bf PIPS-NLP}
+      \begin{itemize}
+        \item Model in \lstinline{StructJuMP.jl}
+        \item Sparse algebra in PIPS
+        \item JuMP currently has no GPU support
+        \item Julia support for Intel and AMD GPUs
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      {\bf HiOp}
+      \begin{itemize}
+        \item Mixed-dense sparse interface for subproblems
+        \item Interface will have GPU support
+        \item MOI interface \lstinline{Hiop.jl}
+        \item Rapid prototyping Julia, production full C++
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  
 \end{frame}
 
 
@@ -250,7 +241,7 @@
   \frametitle{Jacobian Coloring}
   \begin{center}
     \begin{figure}
-      \includegraphics[width=0.65\textwidth]{figures/compression}\footnote{Thanks to Paul Hovland}
+      \includegraphics[width=0.65\textwidth]{figures/compression}
       \caption{Jacobian compression}
     \end{figure}
   \end{center}
@@ -261,12 +252,12 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{AD on GPUs in Julia}
-  \begin{center}
-      \includegraphics[width=0.75\textwidth]{figures/F}
-  \end{center}
-\end{frame}
+% \begin{frame}
+%   \frametitle{AD on GPUs in Julia}
+%   \begin{center}
+%       \includegraphics[width=0.75\textwidth]{figures/F}
+%   \end{center}
+% \end{frame}
 \begin{frame}
   \frametitle{AD on GPUs in Julia}
   \begin{center}
@@ -280,6 +271,7 @@
     \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
     \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
     \item Relying on \lstinline{CUDA.jl} \footnote{\cite{besard2018juliagpu}} \footnote{\cite{besard2019prototyping}}
+    \item \alert{broadcast operator \lstinline{x .= a .* b}}
   \end{itemize}
 \end{frame}
 
@@ -327,22 +319,10 @@
   \end{tabular}
 \end{table}
   \begin{itemize}
-    \item Best for GPU: Iterative
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Preconditioner}
-  \begin{center}
-    \includegraphics[width=0.25\textwidth]{figures/mpiblocks}
-    \includegraphics[width=0.25\textwidth]{figures/gpublocks}
-  \end{center}
-  {\bf Block-Jacobi}
-  \begin{itemize}
-    \item GPU implementation requires a large number of blocks
-    \item PETSc per MPI process: ILU + Krylov \footnote{\cite{schwarz}} 
-    \item GPU: Batch CUBLAS LU inversion
-    \item Expectation: Increase in number of blocks leads to worse preconditioner
+    \item Best for GPUs: Iterative solver
+    \item GMRES and BiCGSTAB \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
+    \item GMRES in \lstinline{Krylov.jl}, no BiCGSTAB 
+    \item Wrote a naive implementation of BiCGSTAB \footnote{\cite{bicgstabVorst}}
   \end{itemize}
 \end{frame}
 
@@ -367,7 +347,7 @@
   \end{tabular}
     \begin{enumerate}
       \item Read dense compressed Jacobian into dense Jacobi blocks
-      \item Batch inversion
+      \item Batch inversion of dense blocks using CUBLAS
       \item Update sparse matrix P from dense Jacobi blocks
     \end{enumerate}
   {\bf Code size}
@@ -376,59 +356,42 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Preconditioner}
-  \includegraphics[width=0.95\textwidth]{figures/preconditioner}
-\end{frame}
-
-\begin{frame}
-  \frametitle{}
-  \centering
-  {\Huge Linear Solver}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Linear solver}
-  {\bf GMRES vs. BiCGSTAB}
-  \begin{center}
-   \includegraphics[width=0.7\textwidth]{figures/gmresbicgstab.png}
-  \end{center}
-  \begin{itemize}
-    \item GMRES and BiCGSTAB \footnote{\cite{bicgstabVorst}} \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
-    \item GMRES in \lstinline{Krylov.jl}, no BiCGSTAB 
-  \end{itemize}
-\end{frame}
+% \begin{frame}
+%   \frametitle{Preconditioner}
+%   \includegraphics[width=0.95\textwidth]{figures/preconditioner}
+% \end{frame}
 
 
-\begin{frame}[fragile]
-  \frametitle{Linear Solver}
-  \begin{center}
-   \includegraphics[width=0.7\textwidth]{figures/bicgstab.png}
-  \end{center}
-\end{frame}
 
-\begin{frame}
-  \frametitle{SIMD on GPUs in Julia}
-  \begin{center}
-      \includegraphics[width=0.75\textwidth]{figures/F}
-  \end{center}
-\end{frame}
-\begin{frame}
-  \frametitle{AD on GPUs in Julia}
-  \begin{center}
-    \lstinline{F = T(undef, n)}
-  \end{center}
-  \begin{itemize}
-    \item Float vector: \lstinline{T = Vector\{Float64\}}
-    \item Arbitrary precision vector: \lstinline{T = Vector\{BigFloat\}}
-    \item First-order tangent: \lstinline{t1s\{N\} =  ForwardDiff.Dual\{Nothing,Float64, N\} where N}
-    \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
-    \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
-    \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
-    \item Relying on \lstinline{CUDA.jl} \footnote{\cite{besard2018juliagpu}} \footnote{\cite{besard2019prototyping}}
-    \item \alert{broadcast operator \lstinline{x .= a .* b}}
-  \end{itemize}
-\end{frame}
+% \begin{frame}[fragile]
+%   \frametitle{Linear Solver}
+%   \begin{center}
+%    \includegraphics[width=0.7\textwidth]{figures/bicgstab.png}
+%   \end{center}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{SIMD on GPUs in Julia}
+%   \begin{center}
+%       \includegraphics[width=0.75\textwidth]{figures/F}
+%   \end{center}
+% \end{frame}
+% \begin{frame}
+%   \frametitle{AD on GPUs in Julia}
+%   \begin{center}
+%     \lstinline{F = T(undef, n)}
+%   \end{center}
+%   \begin{itemize}
+%     \item Float vector: \lstinline{T = Vector\{Float64\}}
+%     \item Arbitrary precision vector: \lstinline{T = Vector\{BigFloat\}}
+%     \item First-order tangent: \lstinline{t1s\{N\} =  ForwardDiff.Dual\{Nothing,Float64, N\} where N}
+%     \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
+%     \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
+%     \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
+%     \item Relying on \lstinline{CUDA.jl} \footnote{\cite{besard2018juliagpu}} \footnote{\cite{besard2019prototyping}}
+%     \item \alert{broadcast operator \lstinline{x .= a .* b}}
+%   \end{itemize}
+% \end{frame}
 
 \begin{frame}
   \frametitle{}
@@ -487,8 +450,8 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{ExaPF.jl}
-  {\bf Context}
+  \frametitle{Results}
+  {\bf 30,000 bus system}
   \begin{itemize}
     \item CUSOLVE: 10s 
     \item Sparse Julia \lstinline{J\\F} (probably UMFPACK): 3.49s 
@@ -518,29 +481,17 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{ExaPF.jl}
-  {\bf BiCGSTAB iterations with decreasing block size}
-  \begin{center}
-   \includegraphics[width=0.45\textwidth]{figures/blocks}
-   \includegraphics[width=0.45\textwidth]{figures/bicgstabiter}
-  \end{center}
-  \begin{itemize}
-    \item Smaller blocks decrease memory footprint by $\frac{1}{n}$ 
-    \item Smaller blocks speed up application of preconditioner in BiCGSTAB $P * x$
-    \item BiCGSTAB unimpressed by smaller block sizes, however FAILS to converge without preconditioner
-  \end{itemize}
-\end{frame}
-
 \begin{frame}
   \frametitle{Conclusions}
+  {\bf Optimization on GPUs for NLPs}
   \begin{itemize}
+    \item Use ExaPF.jl in reduced gradient method for OPF
+    \item Second-order optimization 
     \item Much harder systems for OPF with inequality constraints
-    \item Other GPU first preconditioners
-    \item Rapid prototyping in Julia is fast
-    \item SIMD modeling framework
-    \item Reduced gradient method for OPF
+    \item SIMD modeling framework (MOI)
     \item Support for GPU Arrays on Intel and AMD GPUs
+    \item Augmented Lagrangian with domain decomposition
+    \item Rapid prototyping in Julia is fast
   \end{itemize}
 \end{frame}
 
