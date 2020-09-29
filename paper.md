@@ -1,5 +1,5 @@
 ---
-title: 'ExaPF.jl: A Feasibility Direction Based Power Flow Solver for GPUs'
+title: 'ExaPF.jl: A Power Flow Solver for GPUs'
 tags:
   - Julia
 authors:
@@ -98,7 +98,7 @@ algorithm implemented by `SparseDiffTools.jl`
 [@sparsedifftools].
 
 Given the sparsity pattern, the forward model is applied through the package
-`FordwardDiff.jl` [@RevelsLubinPapamarkou2016]. Given the number of Jaocbian
+`FordwardDiff.jl` [@RevelsLubinPapamarkou2016]. Given the number of Jacobian
 colors $c$ we can build our dual type `t1s` with `c` directions:
 
 ```julia
@@ -217,10 +217,8 @@ Assuming that other vendors will provide such batched BLAS APIs, this code is po
 
 To get an impression of the use case for this solver we show a 30,000 bus system case from the ARPA-E GO competition.
 
-
-
-# References
-
 # Acknowledgments
 
 This research was supported by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative.
+
+# References
