@@ -219,14 +219,14 @@ To get an impression of the use case for this solver we show a 30,000 bus system
 
 ![Dense block Jacobi preconditioner \label{fig:preconditioner}](figures/usecase.png){ width=300px }
 
-Blocks      Block Size Time(s) Time/It.(s) #Iterations
-------       ----------- ------- ----------- -----------
-  32 1857   2.85e+00   9.07e-03   314
-  64  928   1.41e+00   4.57e-03   308
- 128  464   9.15e-01   2.42e-03   378
- 256  232   9.09e-01   1.74e-03   524
- 512  116   5.49e-01   8.90e-04   617
-1024   58   7.50e-01   6.67e-04  1125
+Blocks  Block Size  Time(s)   Time/It.(s) #Iterations
+------  ----------- -------   ----------- -----------
+  32    1857        2.85e+00   9.07e-03   314
+  64    928         1.41e+00   4.57e-03   308
+ 128    464         9.15e-01   2.42e-03   378
+ 256    232         9.09e-01   1.74e-03   524
+ 512    116         5.49e-01   8.90e-04   617
+1024    58          7.50e-01   6.67e-04  1125
 
 This shows the number of BiCGSTAB iterations and the time to convergence for this power system.
 
