@@ -37,7 +37,7 @@ computational loop entirely on the GPU with no transfer from host to device.
 This implementation will serve as the basis for the future OPF implementation
 in the reduced space.
 
-# Statement of Need 
+# Statement of Need
 
 The current state-of-the-art for solving optimal power flow is the
 interior-point method (IPM) in optimization implemented by the solver Ipopt
@@ -60,14 +60,14 @@ supported through the packages `CUDA.jl` [@besard2018juliagpu; @besard2019protot
 ## AutoDiff
 
 Given a set of equations `F(x) = 0`, the Newton-Raphson algorithm for
-solving nonlinear equations (see below) requires the Jacobian `J = jacobian(x)` 
+solving nonlinear equations (see below) requires the Jacobian `J = jacobian(x)`
 of `F`. At each iteration a new step `dx` is computed by
 solving a linear system. In our case `J` is sparse and indefinite.
 
 ```julia
   go = true
   while(go)
-    dx .= jacobian(x)\f(x)
+    dx .= jacobian(x)\F(x)
     x  .= x .- dx
     go = norm(f(x)) < tol ? true : false
   end
@@ -94,11 +94,11 @@ coloring to compress the sparse Jacobian `J`. Running the tangent mode, it
 allows to compute columns of the Jacobian concurrently, by combining
 independent columns in one Jacobian-vector evaluation (see
 \autoref{fig:coloring}). For sparsity detection we rely on the greedy
-algorithm implemented by `SparseDiffTools.jl` 
+algorithm implemented by `SparseDiffTools.jl`
 [@sparsedifftools].
 
 Given the sparsity pattern, the forward model is applied through the package
-`FordwardDiff.jl` [@RevelsLubinPapamarkou2016]. Given the number of Jacobian
+`ForwardDiff.jl` [@RevelsLubinPapamarkou2016]. Given the number of Jacobian
 colors $c$ we can build our dual type `t1s` with `c` directions:
 
 ```julia
@@ -118,7 +118,7 @@ T = Vector{t1s{N}}}
 T = CuVector{t1s{N}}}
 ```
 
-Setting `T` to either of the three types allows us to instantiate code that has been written using the *broadcast operator* `.` 
+Setting `T` to either of the three types allows us to instantiate code that has been written using the *broadcast operator* `.`
 
 ```julia
 x .= a .* b
@@ -175,16 +175,16 @@ Intel GPUs in the future.
 
 ## Linear Solver
 
-As mentioned before, a linear solver is required to compute the Newton step in 
+As mentioned before, a linear solver is required to compute the Newton step in
 
 ```julia
-dx .= jacobian(x)\f(x)
+dx .= jacobian(x)\F(x)
 ```
 
 Our package supports the following linear solvers:
 
 * CUSOLVER with `csrlsvqr` (GPU),
-* `Krylov.jl` with `dqgmres` (CPU/GPU), 
+* `Krylov.jl` with `dqgmres` (CPU/GPU),
 * `IterativeSolvers` with `bicgstab` (CPU) [@sleijpen1993bicgstab],
 * UMFPACK through the default Julia `\` operator (CPU),
 * and a custom BiCGSTAB implementation [@bicgstabVorst] (CPU/GPU).
@@ -194,7 +194,7 @@ performance than GMRES and at the time of this writing both `Krylov.jl` and
 `IterativeSolvers.jl` did not provide an implementation that supported
 `CUDA.jl`.
 
-Using only an iterative solver lead to divergence and bad performance due to
+Using only an iterative solver leads to divergence and bad performance due to
 ill-conditioning of the Jacobian. This is a known phenomenon in power
 systems. That's why this package comes with a block Jacobi preconditioner
 that is tailored towards GPUs and is proven to work well with power flow
