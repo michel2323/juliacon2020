@@ -1,29 +1,23 @@
 ---
-title: 'ExaPF.jl: A Power Flow Solver for GPUs'
+title: 'ExaPF.jl: A Feasibility Direction Based Power Flow Solver for GPUs'
 tags:
   - Julia
 authors:
-  - name: Adrian M. Price-Whelan^[Custom footnotes for e.g. denoting who the corresponding author is can be included like this.]
-    orcid: 0000-0003-0872-7098
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
-    affiliation: 2
-  - name: Author with no affiliation
-    affiliation: 3
+  - name: Michel Schanen  
+    orcid: 0000-0002-4164-027X
+    affiliation: 1
+  - name: Adrian Maldonado 
+    affiliation: 1
+  - name: François Pacaud
+    affiliation: 1 
+  - name: Mihai Anitescu
+    affiliation: 1 
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Argonne National Laboratory
    index: 1
- - name: Institution Name
-   index: 2
- - name: Independent Researcher
-   index: 3
 date: 30 September 2020
-bibliography: presentation.bib
+bibliography: paper.bib
 
-# Optional fields if submitting to a AAS journal too, see this blog post:
-# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ---
 
 # Summary
@@ -219,6 +213,14 @@ CUDA.@sync pivot, info, p.cuJs = CUDA.CUBLAS.getri_batched(blocks, pivot)
 
 Assuming that other vendors will provide such batched BLAS APIs, this code is portable to other GPU architectures.
 
-# Remarks
+# Performance Example 
+
+To get an impression of the use case for this solver we show a 30,000 bus system case from the ARPA-E GO competition.
+
+
 
 # References
+
+# Acknowledgments
+
+This research was supported by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative.
