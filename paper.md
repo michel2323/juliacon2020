@@ -42,9 +42,9 @@ in the reduced space.
 The current state-of-the-art for solving optimal power flow is the
 interior-point method (IPM) in optimization implemented by the solver Ipopt
 [@wachter2004implementation] and is the algorithm of reference
-implementations like MATPOWER [@matpower]. However, its reliance on
-unstructured sparse indefinite inertia revealing direct linear solvers makes
-this algorithm hard to port to GPUs. `ExaPF.jl` aims at applying a reduced
+implementations like MATPOWER [@matpower]. It relies on
+unstructured sparse indefinite inertia revealing direct linear solvers. Those solvers, typically implemented by a sparse LU or LDL algorithm, prove to be hard to port GPUs as they yield a low computational intensity for these type of problems.
+`ExaPF.jl` aims at applying a reduced
 gradient method to tackle this problem, which allows us to leverage iterative
 linear solvers for solving the PF.
 
@@ -99,16 +99,18 @@ algorithm implemented by `SparseDiffTools.jl`
 
 Given the sparsity pattern, the forward model is applied through the package
 `ForwardDiff.jl` [@RevelsLubinPapamarkou2016]. Given the number of Jacobian
-colors $c$ we can build our dual type `t1s` with `c` directions:
+colors $c$ we can build our dual type `t1s` with `ncolors` directions:
 
 ```julia
-t1s{N} = ForwardDiff.Dual{Nothing,Float64, N} where N}
+t1s{ncolors} = ForwardDiff.Dual{Nothing,Float64, ncolors} where ncolors
 ```
 Note that a second-order type `t2s` can be created naturally by applying the same logic to `t1s`:
 
 ```julia
-t2s{M,N} =  ForwardDiff.Dual{Nothing,t1s{N}, M} where M, N}
+t2s{M,N} =  ForwardDiff.Dual{Nothing,t1s{N}, M} where M, N
 ```
+
+Here `M` and `N` are associated with the coloring of the Hessian.  
 
 Finally, this dual type can be ported to both vector types `Vector` and `CuVector`:
 
