@@ -3,15 +3,15 @@ title: 'ExaPF.jl: A Power Flow Solver for GPUs'
 tags:
   - Julia
 authors:
-  - name: Michel Schanen  
+  - name: Michel Schanen
     orcid: 0000-0002-4164-027X
     affiliation: 1
-  - name: Adrian Maldonado 
+  - name: Adrian Maldonado
     affiliation: 1
   - name: François Pacaud
-    affiliation: 1 
+    affiliation: 1
   - name: Mihai Anitescu
-    affiliation: 1 
+    affiliation: 1
 affiliations:
  - name: Argonne National Laboratory
    index: 1
@@ -24,8 +24,8 @@ bibliography: paper.bib
 
 Solving optimal power flow is an important tool in the secure and cost
 effective operation of the transmission power grids. `ExaPF.jl` aims to
-implement a reduced method for solving the optimal power flow problem (OPF)
-fully on GPUs. Reduced methods enforce the constraints, represented here by
+implement a reduced space method for solving the optimal power flow problem (OPF)
+fully on GPUs. Reduced space methods enforce the constraints, represented here by
 the power flow's (PF) system of nonlinear equations, separately at each
 iteration of the optimization in the reduced space. This paper describes the
 API of `ExaPF.jl` for solving the power flow's nonlinear equations entirely on the GPU.
@@ -42,11 +42,11 @@ in the reduced space.
 The current state-of-the-art for solving optimal power flow is the
 interior-point method (IPM) in optimization implemented by the solver Ipopt
 [@wachter2004implementation] and is the algorithm of reference
-implementations like MATPOWER [@matpower]. However, its reliance on
+in implementations like MATPOWER [@matpower]. However, its reliance on
 unstructured sparse indefinite inertia revealing direct linear solvers makes
 this algorithm hard to port to GPUs. `ExaPF.jl` aims at applying a reduced
 gradient method to tackle this problem, which allows us to leverage iterative
-linear solvers for solving the PF.
+linear solvers for solving the linear systems arising in the PF.
 
 Our final goal is a reduced method optimization solver that provides a
 flexible API for models and formulations outside of the domain of OPF.
@@ -62,7 +62,8 @@ supported through the packages `CUDA.jl` [@besard2018juliagpu; @besard2019protot
 Given a set of equations `F(x) = 0`, the Newton-Raphson algorithm for
 solving nonlinear equations (see below) requires the Jacobian `J = jacobian(x)`
 of `F`. At each iteration a new step `dx` is computed by
-solving a linear system. In our case `J` is sparse and indefinite.
+solving a linear system. In our case `J` is sparse and indefinite, but
+invertible.
 
 ```julia
   go = true
@@ -74,8 +75,6 @@ solving a linear system. In our case `J` is sparse and indefinite.
 ```
 There are two modes of differentiation called *forward/tangent* or
 *reverse/adjoint*. The latter is known in machine learning as
-*backpropagation*. The forward mode generates Jacobian-vector product code
-`tgt(x,d) = J(x) * d`, while the adjoint mode generates code for the
 transposed Jacobian-vector product `adj(x,y) = (J(x)'*y)`. We recommend
 @griewank2008evaluating for a more in-depth introduction to automatic
 differentiation. The computational complexity of both models favors the
@@ -94,8 +93,7 @@ coloring to compress the sparse Jacobian `J`. Running the tangent mode, it
 allows to compute columns of the Jacobian concurrently, by combining
 independent columns in one Jacobian-vector evaluation (see
 \autoref{fig:coloring}). For sparsity detection we rely on the greedy
-algorithm implemented by `SparseDiffTools.jl`
-[@sparsedifftools].
+algorithm implemented by `SparseDiffTools.jl` [@sparsedifftools].
 
 Given the sparsity pattern, the forward model is applied through the package
 `ForwardDiff.jl` [@RevelsLubinPapamarkou2016]. Given the number of Jacobian
@@ -113,18 +111,18 @@ t2s{M,N} =  ForwardDiff.Dual{Nothing,t1s{N}, M} where M, N}
 Finally, this dual type can be ported to both vector types `Vector` and `CuVector`:
 
 ```julia
-T = Vector{Float64}
-T = Vector{t1s{N}}}
-T = CuVector{t1s{N}}}
+VT = Vector{Float64}
+VT = Vector{t1s{N}}}
+VT = CuVector{t1s{N}}}
 ```
 
-Setting `T` to either of the three types allows us to instantiate code that has been written using the *broadcast operator* `.`
+Setting `VT` to either of the three types allows us to instantiate code that has been written using the *broadcast operator* `.`
 
 ```julia
 x .= a .* b
 ```
 
-or accessed in kernels written for `KernelAbstractions.jl` like for example the power flow equations (here in polar form):
+or accessed in kernels written with `KernelAbstractions.jl`, like for example the power flow equations (here in polar form):
 
 ```julia
 @kernel function residual_kernel!(F, v_m, v_a,
@@ -169,9 +167,8 @@ illustrate this in \autoref{fig:simd} with a point-wise vector product `x .* y`
 This natural way of computing the compressed Jacobian yields a very high
 performing code that is portable to any vector architecture, given that a
 similar package like `CUDA.jl` exists. We note that similar packages for the
-Intel Compute Engine and AMD ROCm are in development called `oneAPI.jl` and
-`AMDGPU.jl`, respectively. We expect our package to be portable to AMD and
-Intel GPUs in the future.
+Intel Compute Engine (`oneAPI.jl`) and AMD ROCm (`AMDGPU.jl`) are in development.
+We expect our package to be portable to AMD and Intel GPUs in the future.
 
 ## Linear Solver
 
@@ -194,9 +191,9 @@ performance than GMRES and at the time of this writing both `Krylov.jl` and
 `IterativeSolvers.jl` did not provide an implementation that supported
 `CUDA.jl`.
 
-Using only an iterative solver leads to divergence and bad performance due to
+Using the iterative solver out of the box leads to divergence and bad performance due to
 ill-conditioning of the Jacobian. This is a known phenomenon in power
-systems. That's why this package comes with a block Jacobi preconditioner
+systems. That is why this package comes with a block Jacobi preconditioner
 that is tailored towards GPUs and is proven to work well with power flow
 problems.
 
@@ -213,9 +210,14 @@ CUDA.@sync pivot, info, p.cuJs = CUDA.CUBLAS.getri_batched(blocks, pivot)
 
 Assuming that other vendors will provide such batched BLAS APIs, this code is portable to other GPU architectures.
 
-# Performance Example 
+# Performance Example
 
-To get an impression of the use case for this solver we show a 30,000 bus system case from the ARPA-E GO competition.
+To get an impression of the use case for this solver we consider a 30,000 bus system case from the ARPA-E GO competition.
+We show how the convergence of the BiCGSTAB algorithm is impacted by the number of blocks in the Jacobi preconditioner.
+By choosing appropriately the number of blocks, we observe that the iterative solver
+takes 0.55s to solve the linear system on the GPU. As a comparison,
+LAPACK takes 0.22s to solve the system on the CPU, and CUSOLVER (with `csrlsvqr`)
+takes 2.70s.
 
 ![Dense block Jacobi preconditioner \label{fig:preconditioner}](figures/usecase.png){ width=300px }
 
@@ -228,7 +230,7 @@ Blocks  Block Size  Time(s)   Time/It.(s) #Iterations
  512    116         5.49e-01   8.90e-04   617
 1024    58          7.50e-01   6.67e-04  1125
 
-This shows the number of BiCGSTAB iterations and the time to convergence for this power system.
+This shows the number of BiCGSTAB iterations and the time needed to achieve convergence for this power system.
 
 # Acknowledgments
 
