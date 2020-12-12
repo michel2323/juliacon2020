@@ -133,24 +133,23 @@
     \begin{column}{0.45\textwidth}
       {\bf PIPS-NLP}
       \begin{itemize}
-        \item Model in \lstinline{StructJuMP.jl}
+        \item Model in \lstinline{JuMP.jl}
         \item Sparse algebra in PIPS
-        \item JuMP currently has no GPU support
-        \item Julia support for Intel and AMD GPUs
+        \item Scalar variables
       \end{itemize}
     \end{column}
     \begin{column}{0.45\textwidth}
       {\bf HiOp}
       \begin{itemize}
         \item Mixed-dense sparse interface for subproblems
-        \item Interface will have GPU support
-        \item MOI interface \lstinline{Hiop.jl}
-        \item Rapid prototyping Julia, production full C++
+        \item Vector objects
       \end{itemize}
     \end{column}
   \end{columns}
-
-  
+  \begin{itemize}
+    \item Schur complement decomposition for two-stage scenario based optimization
+    \item In this talk: \alert{Domain decomposition for a single optimal power flow scenario}
+  \end{itemize}
 \end{frame}
 
 
