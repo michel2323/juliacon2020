@@ -339,6 +339,19 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Linear solver}
+    \begin{figure}
+      \includegraphics[width=0.75\textwidth]{figures/gmresbicgstab}
+    \end{figure}
+  \begin{itemize}
+    \item Best for GPUs: Iterative solver
+    \item GMRES and BiCGSTAB \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
+    \item GMRES in \lstinline{Krylov.jl}, no BiCGSTAB 
+    \item Wrote a naive implementation of BiCGSTAB \footnote{\cite{bicgstabVorst}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Preconditioner}
   {\bf Setup}
   \begin{itemize}
