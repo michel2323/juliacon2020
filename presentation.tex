@@ -1,10 +1,12 @@
 \documentclass[10pt]{beamer}
 \usepackage{etex}
-\usepackage{subfig}
+% \usepackage{subfig}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
+\usepackage{caption, subcaption}
+\usepackage{bm}
 
 % AMSLaTeX packages
 \usepackage{amsthm,amsmath,amsfonts}
@@ -38,9 +40,53 @@
 %\usepackage{pst-grad} % For gradients
 %\usepackage{pst-plot}
 %\usepackage{pstricks-add}
+\usepackage{tikz}
+\usepackage{tikzscale}
+\usepackage{pgfplots}
+\usepackage{xspace}
+% color cycle from https://colorbrewer1.org/?type=qualitative&scheme=Dark2&n=6
+\usepgfplotslibrary{patchplots}
+ \definecolor{cb1}{RGB}{27,158,119}
+ \definecolor{cb2}{RGB}{217,95,2}
+ \definecolor{cb3}{RGB}{117,112,179}
+ \definecolor{cb4}{RGB}{231,41,138}
+ \definecolor{cb5}{RGB}{102,166,30}
+ \definecolor{cb6}{RGB}{230,171,2}
+\pgfplotscreateplotcyclelist{cbw}{%
+    ultra thick, cb1, densely dashed, mark=*\\%
+    ultra thick, cb1, mark=*\\%
+    ultra thick, cb2, densely dashed, mark=square*\\%
+    ultra thick, cb2, mark=square*\\%
+    ultra thick, cb3, densely dashed, mark=triangle*\\%
+    ultra thick, cb3, mark=triangle*\\%
+    ultra thick, cb4, densely dashed, mark=star\\%
+    ultra thick, cb4, mark=star\\%
+    ultra thick, cb5, densely dashed, mark=diamond*\\%
+    ultra thick, cb5, mark=diamond*\\%
+}
+\pgfplotscreateplotcyclelist{cbww}{%
+    ultra thick, cb1, fill, mark=none\\%
+    ultra thick, cb2, fill, mark=none\\%
+    ultra thick, cb3, fill, mark=none\\%
+    ultra thick, cb6, fill, mark=none\\%
+    ultra thick, cb6\\%
+    ultra thick, cb6, densely dashed\\%
+    ultra thick, cb5, densely dashed, mark=diamond*\\%
+    ultra thick, cb5, mark=diamond*\\%
+}
 \usepackage[off]{pstricks,auto-pst-pdf} % when switched to on, don't forget to include
                                % the aforementioned pstricks packages.
-
+\pgfplotsset{compat=1.15}
+\pgfplotstableread{P.dat}\matrixP
+\pgfplotstableread{M.dat}\matrixM
+\pgfplotstableread{J.dat}\matrixJ
+\pgfplotstableread{N.dat}\matrixN
+\def\nrows{52}
+\def\ncols{52}
+\newcommand{\BiCGSTAB}{\textsc{BiCGSTAB}\xspace}
+\newcommand{\GMRES}{\textsc{GMRES}\xspace}
+\newcommand{\RGMRES}[1]{\textsc{GMRES}(#1)\xspace}
+\newcommand{\DQGMRES}{\textsc{DQGMRES}\xspace}
 % Changes the color of bullets and other fonts to match the NormalANLBlue template
 \definecolor{anlpresentationblue}{RGB}{127 160 195}
 \setbeamercolor{structure}{fg=anlpresentationblue!150} % for slide titles, etc
@@ -83,15 +129,13 @@
 \usebackgroundtemplate{\includegraphics[width=\paperwidth]{NormalANLBlue}}
 
 \title[]{
-(Nonlinear) Optimization Algorithms in Julia for GPUs \\
-{\small Follow-up to: Modeling in Julia at Exascale for Power Grids, JuliaCon 2019
+Domain Decomposition for Unstructured Nonlinear Programming on Parallel Vector Architectures \\
 }
-}
-\author[]{Michel Schanen*, Daniel Adrian Maldonado, Mihai Anitescu}
+\author[]{Michel Schanen*, Daniel Adrian Maldonado, François Pacaud, Mihai Anitescu}
 \subtitle{}
 \institute[ANL/MCS]{Argonne National Laboratory\\ Mathematics and Computer Science
 Division}
-\date{Jul 30, 2020}
+\date{Dec 12, 2020}
 
 \usepackage{tikz,tikz-cd}
 \usepackage{pgfplots,pgfplotstable}

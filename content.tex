@@ -241,10 +241,22 @@
   \frametitle{Jacobian Coloring}
   \begin{center}
     \begin{figure}
-      \includegraphics[width=0.65\textwidth]{figures/compression}
-      \caption{Jacobian compression}
-    \end{figure}
-  \end{center}
+\centering
+     \begin{subfigure}[b]{0.35\linewidth}
+         \centering
+         \includegraphics[height=\textwidth]{figures/sparse_coloring.PNG}
+         \caption{Jacobian stored in CSR or CSC: A valid coloring has no color appearing twice in a row}
+     \end{subfigure}
+     \hspace{0.05\linewidth}
+     \begin{subfigure}[b]{0.35\linewidth}
+         \centering
+         \includegraphics[height=\linewidth]{figures/compressed_coloring.PNG}
+         \caption{Compressed Jacobian in dense storage: White color entries are unused space}
+     \end{subfigure}
+    \caption{Jacobian coloring on the IEEE-30 bus case compressing the matrix from $53 \times 53$ to $15 \times 53$}
+    \label{fig:coloring}
+\end{figure}
+\end{center}
   \begin{itemize}
     \item Using greedy algorithm in \lstinline{SparseDiffTools.jl}
     \item To get full Jacobian, one has to do $c$ times \lstinline{tgt(x,d) = J(x)*d}
@@ -356,42 +368,204 @@
   \end{itemize}
 \end{frame}
 
-% \begin{frame}
-%   \frametitle{Preconditioner}
-%   \includegraphics[width=0.95\textwidth]{figures/preconditioner}
-% \end{frame}
+\begin{frame}
+  \frametitle{Preconditioner}
+\begin{figure}
+  \centering
+  \fbox{
+    \begin{tikzpicture}[scale=2]
+    \foreach \i in {0,...,\nrows}{
+      \foreach \j in {0,...,\ncols}{
+      \pgfplotstablegetelem{\i}{\j}\of\matrixJ
+      \ifnum\pgfplotsretval=0
+        \relax
+      \fi
+      \ifnum\pgfplotsretval=1
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=blue] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=2
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=yellow] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=3
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=orange] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=4
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=green] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=5
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=pink] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=6
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=red] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=7
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=purple] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=8
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=brown] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=9
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=magenta] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=10
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=gray] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=11
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=black] at (\j pt,-\i pt) {};
+      \fi
+      };
+    };
+    \end{tikzpicture}
+  }
+  %
+  \fbox{
+    \begin{tikzpicture}[scale=2]
+    \foreach \i in {0,...,\nrows}{
+      \foreach \j in {0,...,\ncols}{
+      \pgfplotstablegetelem{\i}{\j}\of\matrixN
+      \ifnum\pgfplotsretval=0
+        \relax
+      \fi
+      \ifnum\pgfplotsretval=1
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=blue] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=2
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=yellow] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=3
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=orange] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=4
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=green] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=5
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=pink] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=6
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=red] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=7
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=purple] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=8
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=brown] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=9
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=magenta] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=10
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=gray] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=11
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=black] at (\j pt,-\i pt) {};
+      \fi
+      };
+    };
+    \end{tikzpicture}
+  }
+  \caption{Jacobian partitioning on the IEEE-30 bus case. The figures show the Jacobian with 10 partitions (left) and the Jacobian rearranged by cluster (right). Coefficients with identical color mean that the associated rows and columns share the same partition.}
+  \label{fig:spyJ}
+\end{figure}
+\end{frame}
 
-
-
-% \begin{frame}[fragile]
-%   \frametitle{Linear Solver}
-%   \begin{center}
-%    \includegraphics[width=0.7\textwidth]{figures/bicgstab.png}
-%   \end{center}
-% \end{frame}
-
-% \begin{frame}
-%   \frametitle{SIMD on GPUs in Julia}
-%   \begin{center}
-%       \includegraphics[width=0.75\textwidth]{figures/F}
-%   \end{center}
-% \end{frame}
-% \begin{frame}
-%   \frametitle{AD on GPUs in Julia}
-%   \begin{center}
-%     \lstinline{F = T(undef, n)}
-%   \end{center}
-%   \begin{itemize}
-%     \item Float vector: \lstinline{T = Vector\{Float64\}}
-%     \item Arbitrary precision vector: \lstinline{T = Vector\{BigFloat\}}
-%     \item First-order tangent: \lstinline{t1s\{N\} =  ForwardDiff.Dual\{Nothing,Float64, N\} where N}
-%     \item Second-order tangent: \lstinline{t2s\{M,N\} =  ForwardDiff.Dual\{Nothing,t1s\{N\}, M\} where M, N}
-%     \item First-order tangent vector: \lstinline{T = Vector\{t1s\{N\}\}}
-%     \item First-order tangent GPU vector: \lstinline{T = CuVector\{t1s\{N\}\}}
-%     \item Relying on \lstinline{CUDA.jl} \footnote{\cite{besard2018juliagpu}} \footnote{\cite{besard2019prototyping}}
-%     \item \alert{broadcast operator \lstinline{x .= a .* b}}
-%   \end{itemize}
-% \end{frame}
+\begin{frame}
+  \frametitle{Preconditioner}
+\begin{figure}
+  \centering
+  \fbox{
+    \begin{tikzpicture}[scale=2]
+    \foreach \i in {0,...,\nrows}{
+      \foreach \j in {0,...,\ncols}{
+      \pgfplotstablegetelem{\i}{\j}\of\matrixP
+      \ifnum\pgfplotsretval=0
+        \relax
+      \fi
+      \ifnum\pgfplotsretval=1
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=blue] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=2
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=yellow] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=3
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=orange] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=4
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=green] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=5
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=pink] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=6
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=red] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=7
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=purple] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=8
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=brown] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=9
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=magenta] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=10
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=gray] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=11
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=black] at (\j pt,-\i pt) {};
+      \fi
+      };
+    };
+    \end{tikzpicture}
+  }
+  %
+  \fbox{
+    \begin{tikzpicture}[scale=2]
+    \foreach \i in {0,...,\nrows}{
+      \foreach \j in {0,...,\ncols}{
+      \pgfplotstablegetelem{\i}{\j}\of\matrixM
+      \ifnum\pgfplotsretval=0
+        \relax
+      \fi
+      \ifnum\pgfplotsretval=1
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=blue] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=2
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=yellow] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=3
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=orange] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=4
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=green] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=5
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=pink] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=6
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=red] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=7
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=purple] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=8
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=brown] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=9
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=magenta] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=10
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=gray] at (\j pt,-\i pt) {};
+      \fi
+      \ifnum\pgfplotsretval=11
+        \node[rectangle, minimum size=1pt, inner sep=0pt, fill=black] at (\j pt,-\i pt) {};
+      \fi
+      };
+    };
+    \end{tikzpicture}
+  }
+  \caption{The figures show the block-Jacobi preconditioner computed using batch inversion on diagonal blocks of the restructured Jacobian (right) and the rearranged one that will be used for $\bm{P}_i\,*\,\bm{v}$ products (left).}
+  \label{fig:spyP}
+\end{figure}
 
 \begin{frame}
   \frametitle{}
@@ -442,53 +616,83 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{ExaPF.jl}
-  {\bf 30,000 bus system}
-  \begin{center}
-   \includegraphics[width=0.8\textwidth]{figures/timings}
-  \end{center}
-\end{frame}
-
-\begin{frame}
   \frametitle{Results}
-  {\bf 30,000 bus system}
-  \begin{itemize}
-    \item CUSOLVE: 10s 
-    \item Sparse Julia \lstinline{J\\F} (probably UMFPACK): 3.49s 
-    \item Block Jacobi + BiCGSTAB in ExaPF.jl
-    \begin{itemize}
-      \item Jacobian: 14.2 ms
-      \item Preconditioner: 357 ms
-      \item BiCGSTAB: 4.42s
-      \item Total: 4.8s
-    \end{itemize}
-  \end{itemize}
+  \begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    enlargelimits=0.15,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ylabel={Total runtime (s)},
+    cycle list name=cbww,
+    symbolic x coords={IEEE300,PEGASE,GO1,GO2},
+    xtick=data,
+    ymajorgrids,
+    % nodes near coords,
+    % nodes near coords align={vertical},
+    ]
+\addplot coordinates {(IEEE300,0.00673) (PEGASE,0.432) (GO1,0.328) (GO2,0.760)};
+\addplot coordinates {(IEEE300,0.0915) (PEGASE,2.238) (GO1,0.643) (GO2,1.797)};
+\addplot coordinates {(IEEE300,0.035) (PEGASE,1.480) (GO1,3.299) (GO2,10.338)};
+\legend{\strut UMFPACK \quad,\strut \BiCGSTAB \quad,\strut CUSOLVE}
+\end{axis}
+\end{tikzpicture}
+\caption{Total runtime with various linear solvers}
+\label{fig:totalruntime}
+\end{figure}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Hessian and Jacobian Coloring}
-  \begin{center}
-    \begin{figure}
-      \includegraphics[width=0.45\textwidth]{figures/directionsgpu}\footnote{\cite{simdicpp}}
-    \end{figure}
-  \end{center}
-  \begin{itemize}
-    \item Number of colors for 9,241 bus system: 76, Hessian size: 580,587$\times$580,587, compressed: 580,587$\times$76
-    \item GPU strategy: Effectively SIMD parallelize over colors/directions
-    \item Sweet spot on NVIDIA GV100: Chunks of 32 directions (see Figure)
-    \item 0.3ms per color
-    \item We don’t expect number colors to exceed 500 for final case
-  \end{itemize}
+
+\begin{frame}[fragile]
+  \frametitle{Results}
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    ybar stacked,
+	bar width=15pt,
+% 	nodes near coords,
+    enlargelimits=0.15,
+    cycle list name=cbww,
+    legend style={at={(0.5,-0.20)},
+      anchor=north,legend columns=-1},
+    ylabel={Fraction of total runtime},
+    symbolic x coords={IEEE300, PEGASE, GO1, GO2},
+    xtick=data,
+    ymin = 0,
+    ymajorgrids,
+    x tick label style={rotate=45,anchor=east},
+    ]
+\addplot+[ybar] plot coordinates {(IEEE300,0.056) (PEGASE,0.045) 
+  (GO1,0.0321) (GO2,0.01714)};
+\addplot+[ybar] plot coordinates {(IEEE300,0.107) (PEGASE,0.087)
+  (GO1,0.1742) (GO2,0.2009)}; 
+\addplot+[ybar] plot coordinates {(IEEE300,0.82) (PEGASE,0.85) 
+  (GO1,0.792) (GO2,0.7807)}; 
+\legend{\strut AutoDiff \quad, \strut PC \quad, \strut \BiCGSTAB}
+\end{axis}
+\end{tikzpicture}
+\caption{Fraction of runtime for the three most costly computations: \BiCGSTAB, preconditioner (PC), and Jacobian computation through AutoDiff. The bulk of the time is spent in \BiCGSTAB performing matrix-vector products.}
+\label{fig:relperformance}
+\end{figure}
 \end{frame}
 
+
 \begin{frame}
-  \frametitle{Conclusions}
+  \frametitle{Conclusions and Outlook}
   {\bf Optimization on GPUs for NLPs}
   \begin{itemize}
-    \item Use ExaPF.jl in reduced gradient method for OPF
+    \item ExaPF.jl in reduced gradient method for OPF
     \item Second-order optimization 
+    \begin{itemize}
+      \item Requires solving a system with multiple RHS
+      \item Multiple RHS BiCGSTAB has been implemented in \lstinline{Krylov.jl}
+      \item Block BiCGSTAB is in the work for \lstinline{Krylov.jl}
+    \end{itemize}
+    \item Preconditioners with overlap (e.g. additive Schwarz) on the GPU
+    \item ILU, ICC
+    \item Good edge weights for the partitioning
     \item Much harder systems for OPF with inequality constraints
-    \item SIMD modeling framework (MOI)
     \item Support for GPU Arrays on Intel and AMD GPUs
     \item Augmented Lagrangian with domain decomposition
     \item Rapid prototyping in Julia is fast
