@@ -63,32 +63,27 @@
 \begin{frame}
   \frametitle{First-Order Reduced Method}
   State $\bm{x}$, control $\bm{u}$, and function $h: \REAL^{n} \times \REAL^{m} \to \REAL^{p}$
-  \begin{equation}
-    \underline{x} \leq \bm{x} \leq \overline{x} \;, \quad
-    \underline{u} \leq \bm{u} \leq \overline{u} \;, \quad
-    h(\bm{x}, \bm{u}) \leq 0 \;.
-  \end{equation}
   Optimization Problem:
-  \begin{equation}\label{eq:globalproblem}
+  \begin{equation*}\label{eq:globalproblem}
     \begin{array}{r@{\;\;}l}
       \min_{\bm{x}, \bm{u}} & f(\bm{x}, \bm{u}) \\
       \text{s.t.} & g(\bm{x}, \bm{u}) = 0 \\
                   & h(\bm{x}, \bm{u}) \leq 0 \;,
                   \quad \underline{u} \leq \bm{u} \leq \overline{u}  \;.
     \end{array}
-  \end{equation}
+  \end{equation*}
   Augmented Lagrangian $\mathcal{L}$:
-  \begin{equation}
+  \begin{equation*}
     \mathcal{L}(\bm{x}, \bm{u}, \lambda) = f(\bm{x}, \bm{u}) + \lambda^\top g(\bm{x}, \bm{u}) \; ,
-  \end{equation}
+  \end{equation*}
   Solver for multipliers $\lambda$:
-  \begin{equation}
+  \begin{equation*}
     \dpart{g}{x}^\top \lambda = -\dpart{f}{x}  \; .
-  \end{equation}
+  \end{equation*}
   Compute reduced gradient:
-  \begin{equation}
+  \begin{equation*}
     \grad{f}{u} = \dpart{f}{u} + \dpart{g}{u}^\top\lambda \; .
-  \end{equation}
+  \end{equation*}
 
 \end{frame}
 
@@ -160,35 +155,33 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{First-Order Reduced Method}
+\frametitle{Reduced Method}
+\begin{columns}
+\begin{column}{0.7\linewidth}
+  
   State $\bm{x}$, control $\bm{u}$, and function $h: \REAL^{n} \times \REAL^{m} \to \REAL^{p}$
-  \begin{equation}
-    \underline{x} \leq \bm{x} \leq \overline{x} \;, \quad
-    \underline{u} \leq \bm{u} \leq \overline{u} \;, \quad
-    h(\bm{x}, \bm{u}) \leq 0 \;.
-  \end{equation}
-  Optimization Problem:
-  \begin{equation}\label{eq:globalproblem}
+  \begin{equation*}\label{eq:globalproblem}
     \begin{array}{r@{\;\;}l}
       \min_{\bm{x}, \bm{u}} & f(\bm{x}, \bm{u}) \\
       \text{s.t.} & \alert{g(\bm{x}, \bm{u}) = 0 }\\
                   & h(\bm{x}, \bm{u}) \leq 0 \;,
                   \quad \underline{u} \leq \bm{u} \leq \overline{u}  \;.
     \end{array}
-  \end{equation}
+  \end{equation*}
   Augmented Lagrangian $\mathcal{L}$:
-  \begin{equation}
+  \begin{equation*}
     \mathcal{L}(\bm{x}, \bm{u}, \lambda) = f(\bm{x}, \bm{u}) + \lambda^\top g(\bm{x}, \bm{u}) \; ,
-  \end{equation}
+  \end{equation*}
   Solver for multipliers $\lambda$:
-  \begin{equation}
-    \dpart{g}{x}^\top \lambda = -\dpart{f}{x}  \; .
-  \end{equation}
-  Compute reduced gradient:
-  \begin{equation}
+  \begin{equation*}
+    \alert{\dpart{g}{x}^\top} \lambda = -\dpart{f}{x}  \; .
+  \end{equation*}
+  Reduced gradient:
+  \begin{equation*}
     \grad{f}{u} = \dpart{f}{u} + \dpart{g}{u}^\top\lambda \; .
-  \end{equation}
-
+  \end{equation*}
+\end{column}
+\end{columns}
 \end{frame}
 
 
