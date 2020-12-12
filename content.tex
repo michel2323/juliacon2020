@@ -328,9 +328,8 @@
       \includegraphics[width=0.75\textwidth]{figures/gmresbicgstab}
     \end{figure}
   \begin{itemize}
-    \item Best for GPUs: Iterative solver
-    \item GMRES and BiCGSTAB \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
-    \item GMRES in \lstinline{Krylov.jl}, but it had no BiCGSTAB 
+    \item BiCGSTAB outperforms GMRES on our problem
+    \item GPU enabled GMRES in \lstinline{Krylov.jl}, but it had no BiCGSTAB 
     \item Wrote a naive implementation of BiCGSTAB \footnote{\cite{bicgstabVorst}}
     \item A. Montoison implemented a GPU enabled BiCGSTAB in \lstinline{Krylov.jl}
   \end{itemize}
@@ -674,14 +673,13 @@
     \begin{itemize}
       \item Requires solving a system with multiple RHS
       \item Multiple RHS BiCGSTAB has been implemented in \lstinline{Krylov.jl}
-      \item Block BiCGSTAB is in the work for \lstinline{Krylov.jl}
+      \item Block BiCGSTAB is in the works for \lstinline{Krylov.jl}
     \end{itemize}
-    \item Preconditioners with overlap (e.g. additive Schwarz) on the GPU
-    \item ILU, ICC
+    \item Other preconditioners for unstructured problems (complex networks) on the GPU: additive Schwarz, ILU, ICC
     \item Good edge weights for the partitioning
-    \item Much harder systems for OPF with inequality constraints
-    \item Support for GPU Arrays on Intel and AMD GPUs
-    \item Augmented Lagrangian with domain decomposition
+    \item Avoid ill-conditioning for networks with inequality constraints
+    \item Support for GPU Arrays on Intel (\lstinline(oneAPI.jl) and AMD (\lstinline{AMDGPU.jl}) GPUs
+    \item Augmented Lagrangian with domain decomposition, ADMM
   \end{itemize}
 \end{frame}
 
