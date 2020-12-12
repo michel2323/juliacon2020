@@ -184,6 +184,12 @@ Division}
 \newcommand{\sumfour}[4]{\ensuremath{\sum_{#1,#2,#3,#4 = 1}^n}}
 \newcommand{\D}[0]{\mathrm{D}}
 
+\newcommand{\dpart}[2]{\dfrac{\partial #1}{\partial #2}}
+\newcommand{\deriv}[2]{\dfrac{d #1}{d #2}}
+\newcommand{\grad}[2]{\nabla_{#2}{#1}}
+\newcommand{\hess}[2]{\dfrac{d^2 #1}{d #2}}
+\newcommand{\dhess}[2]{\dfrac{\partial^2 #1}{\partial #2}}
+
 \newcommand{\partone}[2]{\D_{#2} g_{#1}}
 %\newcommand{\parttwo}[3]{H^{#1}_{#2#3}}
 \newcommand{\parttwo}[3]{\D^2_{#2 #3} g_{#1}}
@@ -192,6 +198,7 @@ Division}
 \newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
 %\newcommand{\vect}[1]{\boldsymbol{#1}}
 %\newcommand{\E}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\REAL}{\mathbb{R}}
 
 \usepackage{array}
 \newcolumntype{x}[1]{>{\centering\arraybackslash\hspace{0pt}}p{#1}}

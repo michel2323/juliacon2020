@@ -97,18 +97,48 @@
   \begin{align*}
   &\minimize f(x)\\ 
   \text{with}&\\
-  &g(x) \geq 0, \ i=1,\dots, m \\
-  &c(x) = 0, \ j=1,\dots, l \\
+  &g(x) = 0, \ j=1,\dots, l \\
+  &h(x) \geq 0, \ i=1,\dots, m \\
   \end{align*}
   {\bf using Newton and barrier functions}
   \begin{align*}
-  &\minimize \phi_\mu := f(x) - \mu \sum^m_{i=1} \ln g(x)\\ 
+  &\minimize \phi_\mu := f(x) - \mu \sum^m_{i=1} \ln h(x)\\ 
   \text{with}&\\
-  &c(x) = 0, \ j=1,\dots, l 
+  &g(x) = 0, \ j=1,\dots, l 
   \end{align*}
   \begin{itemize}
     \item Barrier functions exacerbate ill-conditioning
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Reduced Method}
+\begin{columns}
+\begin{column}{0.7\linewidth}
+  
+  State $\bm{x}$, control $\bm{u}$, and function $h: \REAL^{n} \times \REAL^{m} \to \REAL^{p}$
+  \begin{equation*}\label{eq:globalproblem}
+    \begin{array}{r@{\;\;}l}
+      \min_{\bm{x}, \bm{u}} & f(\bm{x}, \bm{u}) \\
+      \text{s.t.} & \alert{g(\bm{x}, \bm{u}) = 0 }\\
+                  & h(\bm{x}, \bm{u}) \leq 0 \;,
+                  \quad \underline{u} \leq \bm{u} \leq \overline{u}  \;.
+    \end{array}
+  \end{equation*}
+  Augmented Lagrangian $\mathcal{L}$:
+  \begin{equation*}
+    \mathcal{L}(\bm{x}, \bm{u}, \lambda) = f(\bm{x}, \bm{u}) + \lambda^\top g(\bm{x}, \bm{u}) \; ,
+  \end{equation*}
+  Solver for multipliers $\lambda$:
+  \begin{equation*}
+    \alert{\dpart{g}{x}^\top} \lambda = -\dpart{f}{x}  \; .
+  \end{equation*}
+  Reduced gradient:
+  \begin{equation*}
+    \grad{f}{u} = \dpart{f}{u} + \dpart{g}{u}^\top\lambda \; .
+  \end{equation*}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -149,49 +179,6 @@
   \begin{itemize}
     \item Schur complement decomposition for two-stage scenario based optimization
     \item In this talk: \alert{Domain decomposition for a single optimal power flow scenario}
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}[fragile]
-  \frametitle{\sout{Optimal} Power Flow}
-  \begin{itemize}
-    \item {\bf \sout{Objective}}
-    \begin{itemize}
-      \item \sout{Generation cost at generators:
-      $ \minimize \sum^G_{i=1} c_i(P_{g_i})$, where $c_i$ is the cost of generator $g_i$}
-    \end{itemize}
-    \item {\bf Constraints}
-    \begin{itemize}
-      \item Kirchhoff's law: What flows in must flow out (nonlinear, non-convex in ACOPF)
-      \begin{align*}
-        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P_k - j Q_k,\ k = 1, \dots, N \\
-        \text{where}\\
-        V_k &\text{ voltage magnitude at node } k\\
-        \theta &\text{ voltage angle at node } k\\
-        G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
-        P_k , Q_k &\text{ net real and reactive power entering and leaving node } k
-      \end{align*}
-      \item \sout{Line limits: $ \theta^{min}_{nm} \leq \theta_n - \theta_m \leq \theta^{max}_{nm}$}
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Power Flow}
-  {\bf Nonlinear equations}
-  \begin{itemize}
-      \item Kirchhoff's law: What flows in must flow out (nonlinear, non-convex in ACOPF)
-      \begin{align*}
-        V_k e^{-j\theta_k} & \sum^{N}_{m=0} (G_{km} + jB_{km})V_m e^{j\theta_m} = P - jQ,\ k = 1, \dots, N \\
-        \text{where}\\
-        V_k &\text{ voltage magnitude at node } k\\
-        \theta &\text{ voltage angle at node } k\\
-        G_{km} + jB_{km}& \text{ element of nodal admittance matrix}\\
-        P, Q &\text{ net real and reactive power entering and leaving node } k
-      \end{align*}
-      \item Use Newton-Raphson to solve nonlinear equations
-      \item Reference implementation: MATPOWER in Matlab
   \end{itemize}
 \end{frame}
 
@@ -238,13 +225,12 @@
 
 \begin{frame}
   \frametitle{Jacobian Coloring}
-  \begin{center}
     \begin{figure}
 \centering
      \begin{subfigure}[b]{0.35\linewidth}
          \centering
          \includegraphics[height=\textwidth]{figures/sparse_coloring.PNG}
-         \caption{Jacobian stored in CSR or CSC: A valid coloring has no color appearing twice in a row}
+         \caption{Colored Jacobian: A valid coloring has no color appearing twice in a row}
      \end{subfigure}
      \hspace{0.05\linewidth}
      \begin{subfigure}[b]{0.35\linewidth}
@@ -252,13 +238,12 @@
          \includegraphics[height=\linewidth]{figures/compressed_coloring.PNG}
          \caption{Compressed Jacobian in dense storage: White color entries are unused space}
      \end{subfigure}
-    \caption{Jacobian coloring on the IEEE-30 bus case compressing the matrix from $53 \times 53$ to $15 \times 53$}
+    \caption{Jacobian coloring on the IEEE 30 bus case} %bus case compressing the matrix from $53 \times 53$ to $15 \times 53$}
     \label{fig:coloring}
 \end{figure}
-\end{center}
   \begin{itemize}
     \item Using greedy algorithm in \lstinline{SparseDiffTools.jl}
-    \item To get full Jacobian, one has to do $c$ times \lstinline{tgt(x,d) = J(x)*d}
+    % \item To get full Jacobian, one has to do $c$ times \lstinline{tgt(x,d) = J(x)*d}
     \item Complexity for Jacobian goes from $\bigo{n} \times cost(f)$ to $\bigo{c} \times cost(f)$
   \end{itemize}
 \end{frame}
@@ -286,28 +271,28 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{AD on GPUs in Julia}
-  \begin{columns}[T]
-    \begin{column}{0.35\textwidth}
-      \begin{center}
-        \vspace{0.2cm}
-        \includegraphics[width=\linewidth]{figures/compression}
-      \end{center}
-    \end{column}
-    \begin{column}{0.6\textwidth}
-      \begin{center}
-        \includegraphics[width=\linewidth]{figures/simd}
-      \end{center}
-    \end{column}
-  \end{columns}
-  \begin{center}
-  \end{center}
-  {\bf SIMD over sparsity colors}
-  \begin{itemize}
-    \item Change from \lstinline{F = f(x)} to \lstinline{J = f(x)} on GPUs is a type change from \lstinline{Vector\{Float64\}} to \lstinline{CuVector\{t1s\{c\}\}}
-  \end{itemize}
-\end{frame}
+% \begin{frame}
+%   \frametitle{AD on GPUs in Julia}
+%   \begin{columns}[T]
+%     \begin{column}{0.35\textwidth}
+%       \begin{center}
+%         \vspace{0.2cm}
+%         \includegraphics[width=\linewidth]{figures/compression}
+%       \end{center}
+%     \end{column}
+%     \begin{column}{0.6\textwidth}
+%       \begin{center}
+%         \includegraphics[width=\linewidth]{figures/simd}
+%       \end{center}
+%     \end{column}
+%   \end{columns}
+%   \begin{center}
+%   \end{center}
+%   {\bf SIMD over sparsity colors}
+%   \begin{itemize}
+%     \item Change from \lstinline{F = f(x)} to \lstinline{J = f(x)} on GPUs is a type change from \lstinline{Vector\{Float64\}} to \lstinline{CuVector\{t1s\{c\}\}}
+%   \end{itemize}
+% \end{frame}
 
 \begin{frame}
   \frametitle{}
@@ -316,11 +301,11 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Linear solver}
+  \frametitle{Linear Solver}
   {\bf Tour de Solvers, solver we have experience with}
   \begin{table}
   \begin{tabular}{p{5cm}|lll}
-    MA27, MA57, MUMPS, SPQR, CUSOLVER, SPRAL SSIDS & indefinite & sparse & direct \\
+    MA27, MA57, MUMPS, SPQR, CUSOLVER, SPRAL SSIDS, SuperLU & indefinite & sparse & direct \\
     \hline
     BLAS, CUBLAS & indefinite & dense  & direct \\
     \hline
@@ -330,10 +315,10 @@
   \end{tabular}
 \end{table}
   \begin{itemize}
-    \item Best for GPUs: Iterative solver
-    \item GMRES and BiCGSTAB \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
-    \item GMRES in \lstinline{Krylov.jl}, no BiCGSTAB 
-    \item Wrote a naive implementation of BiCGSTAB \footnote{\cite{bicgstabVorst}}
+    \item For IPM: indefinite direct sparse intertia (LDL) revealing linear solver
+    \item Krylov methods are tricky with IPM 
+    \item Direct solvers are tricky with GPUs
+    \item Reduced space $\rightarrow$ try Krylov methods, system still indefinite, no inertia needed
   \end{itemize}
 \end{frame}
 
@@ -345,8 +330,9 @@
   \begin{itemize}
     \item Best for GPUs: Iterative solver
     \item GMRES and BiCGSTAB \footnote{\cite{sleijpen1993bicgstab}} in \lstinline{IterativeSolvers.jl}, no GPU support 
-    \item GMRES in \lstinline{Krylov.jl}, no BiCGSTAB 
+    \item GMRES in \lstinline{Krylov.jl}, but it had no BiCGSTAB 
     \item Wrote a naive implementation of BiCGSTAB \footnote{\cite{bicgstabVorst}}
+    \item A. Montoison implemented a GPU enabled BiCGSTAB in \lstinline{Krylov.jl}
   \end{itemize}
 \end{frame}
 
@@ -358,7 +344,7 @@
   \end{itemize}
   {\bf Update P}
   \begin{tabular}{m{0.15\textwidth}m{0.05\textwidth}m{0.3\textwidth}m{0.05\textwidth}m{0.3\textwidth}}
-        \includegraphics[width=0.15\textwidth]{./figures/compressed}
+        \includegraphics[width=0.09\textwidth]{./figures/compressed_coloring.PNG}
     &
     {\Huge $\rightarrow$}
     &
@@ -589,12 +575,7 @@
 \begin{frame}[fragile]
   \frametitle{ExaPF.jl}
   \begin{lstlisting}
-    pkg> instantiate
-    julia> target = "cuda" 
-    julia> include("examples/pf.jl") 
-    julia> datafile = "test/case14.raw"
-    julia> sol, conv, res = pf(datafile, 8, "bicgstab") # slow
-    julia> sol, conv, res = pf(datafile, 8, "bicgstab")
+    pkg> add ExaPF
   \end{lstlisting}
   \begin{itemize}
     \item \url{https://exanauts.github.io/}
@@ -606,10 +587,10 @@
 
 \begin{frame}[fragile]
   \frametitle{ExaPF.jl}
-  {\bf 30,000 bus system}
+  {\bf Example: 30,000 bus system}
   \begin{lstlisting}
     julia> datafile = "GO-Data/.../Network_30R-025/.../case.raw"
-    julia> sol, conv, res = pf(datafile, 1000, "bicgstab")
+    julia> sol, conv, res = pf(datafile, 1000, "bicgstab", CUDADevice())
   \end{lstlisting}
   \begin{itemize}
     \item \lstinline{size(J)} = 57,721 $\times$ 57,721 
@@ -617,21 +598,14 @@
     \item Total GPU memory usage: 5 GB
     \item Number of Jacobian colors: 29
     \item 4 Newton iterations with $tol = 1e^{-6}$, total BiCGSTAB iterations: 3,752 
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Results}
-  \begin{itemize}
-    \item Code runs on local workstation {\it moonshot} and Summit
-    \item NVIDIA Quadro GV100 based on Volta 
+    \item Code runs on local workstation {\it moonshot (x64)} and Summit (PPC) both equipped with NVIDIA Quadro GV100 based on Volta 
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Results}
   \begin{figure}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.8]
 \begin{axis}[
     ybar,
     enlargelimits=0.15,
@@ -660,7 +634,7 @@
 \begin{frame}[fragile]
   \frametitle{Results}
 \begin{figure}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.80]
 \begin{axis}[
     ybar stacked,
 	bar width=15pt,
@@ -708,7 +682,6 @@
     \item Much harder systems for OPF with inequality constraints
     \item Support for GPU Arrays on Intel and AMD GPUs
     \item Augmented Lagrangian with domain decomposition
-    \item Rapid prototyping in Julia is fast
   \end{itemize}
 \end{frame}
 
